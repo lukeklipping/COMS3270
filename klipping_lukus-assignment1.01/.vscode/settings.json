@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "dungeongeneration.h": "c",
+        "time.h": "c"
+    }
+}

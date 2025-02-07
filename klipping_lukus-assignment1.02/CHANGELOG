@@ -1,0 +1,4 @@
+2/06/2025 2:35: Begin adding hardness to rock
+                Basing hardness off of rlg327
+2/05/2025 2:45: hardness finished
+                Added new hardness array, initialized with dungeon array               

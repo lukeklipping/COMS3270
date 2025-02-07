@@ -1,0 +1,4 @@
+This program generates a random dungeon for a Roguelike game, consisting of rooms, hallways, and stairs. 
+The dungeon is represented as a grid, and the program randomly creates rooms of different sizes, connects them with hallways, and places two stairs "<,>" within the dungeon. The dungeon layout is printed to the terminal when the program runs.
+
+To run, "make" in command line, and "./dungeon" next

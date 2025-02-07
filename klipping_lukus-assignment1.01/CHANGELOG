@@ -1,0 +1,32 @@
+1/30/2025 2:30: Added constant values and dungeon array
+                Including HEIGHT,WIDTH,ROCK,ROOM,MIN_WIDTH,MIN_HEIGHT  
+1/30/2025 2:30: Created dungeon_init
+                Initializes dungeon to size of 80x21 and fills with rock characters
+1/30/2025 2:35: Created dungeon_print
+                Prints out dungeon array
+1/30/2025 3:00: Began generate_rooms
+1/30/2025 3:35: created dungeonGeneration.h for interface
+1/30/2025 3:40: Ran into room placement bug
+                dungeon empty with nothing placed, place print statements for debugging
+                Random width and x made
+1/30/2025 6:00: Another room placement bug  
+                Fixed then previous bug from before, new bug repeats the same bug    
+1/30/2025 6:05: Room placement working
+                Realized bug was within array indexing [i][j]. Room placement now correct
+1/30/2025 6:10: Reducing room amount
+1/30/2025 6:20: Began corridor placement
+1/31/2025 8:50: Ran into bug with room array
+                Prints through room characters
+1/31/2025 12:00: Created generate_corridor
+                To split up code to reduce method size
+2/01/2025 3:00: Generate corridor finished
+2/01/2025 3:20: Begin generate stairs
+2/02/2025 2:00: Problem with stairs
+                Running into out of bounds placement
+2/02/2025 2:25: generate_stairs fixed
+                random x and y value of stairs was adding the full width of the room to it,
+                causing a infinite loop/segmentation fault in the do while loop 
+2/02/2024 3:00: Assignment finished
+                Believed to be finished, will update if incorrect
+2/03/2024 2:55: Updated README and turned in.
+                  
