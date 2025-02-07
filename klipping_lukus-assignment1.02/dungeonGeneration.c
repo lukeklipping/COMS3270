@@ -177,7 +177,7 @@ void generate_stairs(dungeon_t *d){
     }
 }
 
-/*void save_dungeon(){
+void save_dungeon(dungeon_t *d){
     char *path;
     FILE *f = fopen(path, "w");
     uint8_t write_to8;
@@ -218,8 +218,10 @@ void generate_stairs(dungeon_t *d){
     
 
    //r, an unsigned 16-bit integer giving the number of rooms in the dungeon (2 bytes)
+   write_to16 = htobe16((uint16_t)d->num_rooms);
+   fwrite(&write_to16, sizeof(write_to16), 1, f);
     
-}*/
+}
 
 
 
