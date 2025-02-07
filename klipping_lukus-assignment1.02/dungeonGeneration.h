@@ -25,12 +25,17 @@ typedef enum{
     action_load
 } action;
 
+typedef struct dungeon{
+    int num_rooms;
+    Room *rooms;
+}dungeon_t;
+
 void dungeon_init();
 void dungeon_print();
 int is_valid(int, int, int, int);
-int generate_rooms_character(Room **r);
-void generate_corridor(Room **r, int);
-void generate_stairs(Room **r, int);
+void generate_rooms_character(dungeon_t *d);
+void generate_corridor(dungeon_t *d);
+void generate_stairs(dungeon_t *d);
 
 
 

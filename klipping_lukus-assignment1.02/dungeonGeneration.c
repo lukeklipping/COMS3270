@@ -12,8 +12,12 @@ char dungeon[HEIGHT][WIDTH];
 int hardness[HEIGHT][WIDTH];
 
 
+
+
 // fills dungeon with rock and initializes hardness
 void dungeon_init(){
+    dungeon_t *d = malloc(sizeof(dungeon_t));
+    d->rooms = malloc(sizeof(Room) * MAX_ROOMS);
     int x, y;
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x < WIDTH; x++){
@@ -57,12 +61,12 @@ int is_valid(int x, int y, int w, int h){
 }
 
 // generates rooms and returns room count and places character
-int generate_rooms_character(Room **r){
+void generate_rooms_character(dungeon_t *d){
     int num_rooms = MIN_ROOMS + rand() % (MAX_ROOMS - MIN_ROOMS + 1);
     int room_count = 0;
     int j, i;
 
-    *r = malloc(num_rooms * sizeof(Room));
+    //*r = malloc(num_rooms * sizeof(Room));
 
     while(room_count < num_rooms){
         int width = MIN_WIDTH + rand() % 12;
@@ -81,36 +85,40 @@ int generate_rooms_character(Room **r){
                     hardness[i][j] = 0;
                 }
             }
+            d->rooms->x = x;
+            d->rooms->y = y;
+            d->rooms->width = width;
+            d->rooms->height = height;
+            /*   
             (*r)[room_count].x = x;
             (*r)[room_count].y = y;
             (*r)[room_count].width = width;
-            (*r)[room_count].height = height;
+            (*r)[room_count].height = height;*/
 
-            room_count++;
+            d->num_rooms++;
         }
     }   
     int px;
     int py;
     do{
-        px = (*r)[0].x + rand() % (*r)[0].width;
-        py = (*r)[0].y + rand() % (*r)[0].height;  
+        px = d->rooms->x +rand() % d->rooms[0].width;
+        py = d->rooms->y + rand() % d->rooms[0].height;  
     } while(dungeon[py][px] != ROOM);
     
     dungeon[py][px] = PLAYER;
     
-    return room_count;
 }
 
 
 // generates hallways from room to room, continues past room characters
-void generate_corridor(Room **r, int num_rooms){
+void generate_corridor(dungeon_t *d){
     int i;
-    for(i = 0; i < num_rooms -1; i++){
+    for(i = 0; i < d->num_rooms -1; i++){
         //printf("%d %d %d %d", (*r)[i].x, (*r)[i].y, (*r)[i].width, (*r)[i].height);
-        int x1 = (*r)[i].x + (*r)[i].width /2;
-        int y1 = (*r)[i].y + (*r)[i].height /2;
-        int x2 = (*r)[i + 1].x + (*r)[i + 1].width /2;
-        int y2 = (*r)[i + 1].y + (*r)[i + 1].height /2;
+        int x1 = d->rooms[i].x + d->rooms[i].width /2;
+        int y1 = d->rooms[i].y + d->rooms[i].height /2;
+        int x2 = d->rooms[i].x + d->rooms[i + 1].width /2;
+        int y2 = d->rooms[i + 1].y + d->rooms[i + 1].height /2;
 
         // horizontal corridor
         if (x1 < x2) {
@@ -154,51 +162,83 @@ void generate_corridor(Room **r, int num_rooms){
     }
 }
 
-void generate_stairs(struct Room **r, int num_rooms){
+void generate_stairs(dungeon_t *d){
     char stairs[2] = {'<', '>'};
     int i, y, x;
     for(i = 0; i < 2; i++){
-        int room_index = rand() % num_rooms;
+        int room_index = rand() % d->num_rooms;
         do{
-            y = (*r)[room_index].y +  (rand() % (*r)[room_index].height);
-            x = (*r)[room_index].x + (rand() % (*r)[room_index].width);
+            y = d->rooms[room_index].y +  (rand() % d->rooms[room_index].height);
+            x = d->rooms[room_index].x + (rand() % d->rooms[room_index].width);
         } while(dungeon[y][x] != ROOM);
         dungeon[y][x] = stairs[i];
         hardness[y][x] = 0;
     }
 }
 
-void save_dungeon(){
+/*void save_dungeon(){
     char *path;
     FILE *f = fopen(path, "w");
+    uint8_t write_to8;
+    uint16_t write_to16;
+    uint32_t write_to32;
 
     char *semantic = "RLG327-S2025";
-
     //remove null
-    fwrite(semantic, 1, strlen(semantic) -1, f);
+    fwrite(semantic, 1, strlen(semantic), f);
     
-    int version = 0;
-    uint32_t write_to = htobe32(version);
-    fwrite(&write_to, sizeof(write_to), 1, f);
 
-}
+
+    int version = 0;
+    write_to32 = htobe32(version);
+    fwrite(&write_to32, sizeof(write_to32), 1, f);
+
+    //integer size file
+    
+    //A pair of unsigned 8-bit integers giving the x and y position of the PC
+    for(int i = 0; i < HEIGHT; i++){
+        for(int j = 0; j < WIDTH; j++){
+            if(dungeon[i][j] == PLAYER){
+                //y
+                write_to8 = (uint8_t)j;
+                fwrite(&write_to8, sizeof(write_to8), 1, f);
+
+                //x
+                write_to8 = (uint8_t)i;
+                fwrite(&write_to8, sizeof(write_to8), 1, f);
+                break;
+            }
+        }
+    }
+
+    
+    //The row-major dungeon matrix from top to bottom, with one byte, containing cell hardness, per cell. The hardness ranges from zero to 255, with
+    //zero representing open space (room or corridor) and 255 representing immutable rock (probably only the border).
+    
+
+   //r, an unsigned 16-bit integer giving the number of rooms in the dungeon (2 bytes)
+    
+}*/
+
+
+
 
 
 int main(int argc, char *argv[]){
-    struct Room *rooms = NULL;
+    dungeon_t dungeon;
     srand(time(NULL));
 
     dungeon_init();
-    int num_rooms = generate_rooms_character(&rooms);
+    generate_rooms_character(&dungeon);
     
     // optional to place next two functions within generate_rooms
-    generate_corridor(&rooms, num_rooms);
-    generate_stairs(&rooms, num_rooms);
+    generate_corridor(&dungeon);
+    generate_stairs(&dungeon);
     // ^^
     dungeon_print();
 
     // frees rooms memory
-    free(rooms);
+    //free(dungeon);
     return 0;
 }
 
