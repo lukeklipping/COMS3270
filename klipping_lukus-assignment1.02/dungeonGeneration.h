@@ -20,14 +20,24 @@ typedef struct Room{
     int x, y, height, width;
 }Room;
 
+
 typedef enum{
     action_save,
     action_load
 } action;
 
+typedef struct {
+    uint8_t y;
+    uint8_t x;
+} pair_t;
+
 typedef struct dungeon{
     int num_rooms;
     Room *rooms;
+    uint8_t hardness[HEIGHT][WIDTH];
+    pair_t PC;
+    pair_t *stairs;
+    int num_stairs;
 }dungeon_t;
 
 void dungeon_init();
@@ -36,7 +46,6 @@ int is_valid(int, int, int, int);
 void generate_rooms_character(dungeon_t *d);
 void generate_corridor(dungeon_t *d);
 void generate_stairs(dungeon_t *d);
-
 
 
 #endif
