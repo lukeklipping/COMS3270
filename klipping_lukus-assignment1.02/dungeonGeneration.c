@@ -16,8 +16,7 @@ int hardness[HEIGHT][WIDTH];
 
 // fills dungeon with rock and initializes hardness
 void dungeon_init(){
-    dungeon_t *d = malloc(sizeof(dungeon_t));
-    d->rooms = malloc(sizeof(Room) * MAX_ROOMS);
+    
     int x, y;
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x < WIDTH; x++){
@@ -66,7 +65,9 @@ void generate_rooms_character(dungeon_t *d){
     int room_count = 0;
     int j, i;
 
-    //*r = malloc(num_rooms * sizeof(Room));
+    //dungeon_t *d = malloc(sizeof(dungeon_t));
+    d->rooms = malloc(num_rooms * sizeof(Room));
+    d->num_rooms = 0;
 
     while(room_count < num_rooms){
         int width = MIN_WIDTH + rand() % 12;
@@ -85,17 +86,17 @@ void generate_rooms_character(dungeon_t *d){
                     hardness[i][j] = 0;
                 }
             }
-            d->rooms->x = x;
-            d->rooms->y = y;
-            d->rooms->width = width;
-            d->rooms->height = height;
+            d->rooms[room_count].x = x;
+            d->rooms[room_count].y = y;
+            d->rooms[room_count].width = width;
+            d->rooms[room_count].height = height;
             /*   
             (*r)[room_count].x = x;
             (*r)[room_count].y = y;
             (*r)[room_count].width = width;
             (*r)[room_count].height = height;*/
-
             d->num_rooms++;
+            room_count++;
         }
     }   
     int px;
@@ -117,7 +118,7 @@ void generate_corridor(dungeon_t *d){
         //printf("%d %d %d %d", (*r)[i].x, (*r)[i].y, (*r)[i].width, (*r)[i].height);
         int x1 = d->rooms[i].x + d->rooms[i].width /2;
         int y1 = d->rooms[i].y + d->rooms[i].height /2;
-        int x2 = d->rooms[i].x + d->rooms[i + 1].width /2;
+        int x2 = d->rooms[i + 1].x + d->rooms[i + 1].width /2;
         int y2 = d->rooms[i + 1].y + d->rooms[i + 1].height /2;
 
         // horizontal corridor
@@ -238,7 +239,7 @@ int main(int argc, char *argv[]){
     dungeon_print();
 
     // frees rooms memory
-    //free(dungeon);
+    free(dungeon.rooms);
     return 0;
 }
 
