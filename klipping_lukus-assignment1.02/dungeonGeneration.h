@@ -1,5 +1,9 @@
 #ifndef DUNGEONGENERATION_H
 #define DUNGEONGENERATION_H
+#include<stdint.h>
+
+
+#define DUNGEON_VERSIONX 0
 
 #define HEIGHT 21
 #define WIDTH 80
@@ -36,8 +40,7 @@ typedef struct dungeon{
     Room *rooms;
     uint8_t hardness[HEIGHT][WIDTH];
     pair_t PC;
-    pair_t *stairs;
-    int num_stairs;
+    //pair_t *stairs;
 }dungeon_t;
 
 void dungeon_init();
