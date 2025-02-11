@@ -12,6 +12,7 @@
 #define ROCK ' '
 #define ROOM '.'
 #define HALL '#'
+#define IMMUTABLE_WALL 255
 
 #define MIN_WIDTH 4
 #define MIN_HEIGHT 3

@@ -21,7 +21,7 @@ void dungeon_init(dungeon_t *d){
         for(x = 0; x < WIDTH; x++){
             if(x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT  - 1){
                 dungeon[y][x] = ROCK;
-                d->hardness[y][x] = 255;
+                d->hardness[y][x] = IMMUTABLE_WALL;
             }else{
                 dungeon[y][x] = ROCK;
                 d->hardness[y][x] = 1 + rand() % 254;
@@ -62,7 +62,7 @@ int is_valid(int x, int y, int w, int h){
 void generate_rooms_character(dungeon_t *d){
     int num_rooms = MIN_ROOMS + rand() % (MAX_ROOMS - MIN_ROOMS + 1);
     int room_count = 0;
-    int j, i;
+    int j, i, px, py;
 
     //dungeon_t *d = malloc(sizeof(dungeon_t));
     d->rooms = malloc(num_rooms * sizeof(Room));
@@ -94,8 +94,7 @@ void generate_rooms_character(dungeon_t *d){
             room_count++;
         }
     }   
-    int px;
-    int py;
+
     do{
         px = d->rooms->x +rand() % d->rooms[0].width;
         py = d->rooms->y + rand() % d->rooms[0].height;  
@@ -159,7 +158,7 @@ void generate_corridor(dungeon_t *d){
         }
     }
 }
-
+// generates both stairs
 void generate_stairs(dungeon_t *d){
     //< up
     //> down
@@ -268,6 +267,7 @@ int save_stairs(dungeon_t *d, FILE *f){
     return 0;
 }
 
+// helper method to count '<'
 int count_up_stairs(dungeon_t *d){
     int x, y, i;
     for(y = 0; y < HEIGHT; y++){
@@ -280,6 +280,7 @@ int count_up_stairs(dungeon_t *d){
     return i;
 }
 
+// helper method to count '>'
 int count_down_stairs(dungeon_t *d){
     int x, y, i;
     for(y = 0; y < HEIGHT; y++){
@@ -292,6 +293,7 @@ int count_down_stairs(dungeon_t *d){
     return i;
 }
 
+// fileread helper to place dungeon map
 int read_dungeon_map(dungeon_t *d, FILE* f){
     int y, x;
 
@@ -300,6 +302,8 @@ int read_dungeon_map(dungeon_t *d, FILE* f){
             fread(&d->hardness[y][x], 1, 1, f);
             if(&d->hardness[y][x] == 0){
                 dungeon[y][x] = HALL;
+            } else if(&d->hardness[y][x] == 255){
+                dungeon[y][x] = IMMUTABLE_WALL;
             } else{
                 dungeon[y][x] == ROCK;
                 //could factor in immutable
