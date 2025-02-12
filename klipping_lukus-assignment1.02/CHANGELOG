@@ -2,9 +2,23 @@
                 Basing hardness off of rlg327
 2/05/2025 2:45: hardness finished
                 Added new hardness array, initialized with dungeon array    
-2/05/2025 3:00: dungeon save            
+2/05/2025 3:00: dungeon save           
 2/05/2025 8:00: Complete code overhaul           
                 Changed to dungeon_t to use pointers
+2/05/2025 9:00: dungeon save finished
+2/05/2025 9:30: added helper methods
+                helper methods shortened the save dungeon 
 2/09/2025 12:00: Began load dungeon 
+2/09/2025 1:00: made load dungeon helpers
+2/10/2025 2:30: Made action flags enum in main
+2/11/2025 3:30: --rand working correctly
 2/11/2025 3:00: Ran into huge bug 
                 unallocated memory, using valgrind to finished
+2/11/2025 8:30: Downloaded saved_dungeons
+2/11/2025 8:30: Ran through all saved dungeons
+                Succesfull attempts
+                ./dungeon --load saved_dungeons/welldone.rlg327
+2/12/2025 1:30: made generate_PC
+                Seperated it from the create room
+2/12/2025 3:15: Wont load a file directly from the save location. 
+2/12/2025 3:15: turning in

@@ -54,6 +54,7 @@ int is_valid(int, int, int, int);
 void generate_rooms_character(dungeon_t *d);
 void generate_corridor(dungeon_t *d);
 void generate_stairs(dungeon_t *d);
+int generate_PC(dungeon_t *d);
 int count_up_stairs(dungeon_t *d);
 int count_down_stairs(dungeon_t *d);
 int read_dungeon_map(dungeon_t *d, FILE* f);
