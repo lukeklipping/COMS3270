@@ -6,3 +6,5 @@
 2/05/2025 8:00: Complete code overhaul           
                 Changed to dungeon_t to use pointers
 2/09/2025 12:00: Began load dungeon 
+2/11/2025 3:00: Ran into huge bug 
+                unallocated memory, using valgrind to finished

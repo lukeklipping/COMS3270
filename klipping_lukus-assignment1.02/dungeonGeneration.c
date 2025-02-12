@@ -3,6 +3,8 @@
 #include<time.h>
 #include<endian.h>
 #include<string.h>
+#include <sys/stat.h>
+#include<errno.h>
 
 #include "dungeonGeneration.h"
 
@@ -181,66 +183,10 @@ void generate_stairs(dungeon_t *d){
     //d->num_down_stairs++;
 }
 
-void save_dungeon(dungeon_t *d){
-    char *path;
-    FILE *f = fopen(path, "w");
-    uint16_t write_to16;
-    uint32_t write_to32;
-
-    char *semantic = "RLG327-S2025";
-    fwrite(semantic, 1, strlen(semantic), f);
-    
-
-
-    
-    write_to32 = htobe32(DUNGEON_VERSIONX);
-    fwrite(&write_to32, sizeof(write_to32), 1, f);
-
-    //integer size file
-    
-    //A pair of unsigned 8-bit integers giving the x and y position of the PC
-    uint8_t x = d->PC.x;
-    uint8_t y = d->PC.y;
-    fwrite(&x, 1, 1, f);
-    fwrite(&y, 1, 1, f);
-    
-    //The row-major dungeon matrix from top to bottom, with one byte, containing cell hardness, per cell. The hardness ranges from zero to 255, with
-    //zero representing open space (room or corridor) and 255 representing immutable rock (probably only the border).
-    for(int i = 0; i < HEIGHT; i++){
-        for(int j = 0; j <WIDTH; j++){
-            fwrite(&d->hardness[i][j], 1,1,f);
-        }
-    }
-    
-   //r, an unsigned 16-bit integer giving the number of rooms in the dungeon (2 bytes)
-   write_to16 = htobe16((uint16_t)d->num_rooms);
-   fwrite(&write_to16, sizeof(write_to16), 1, f);
-
-   //The positions of all of the rooms in the dungeon, given with 4 unsigned
-    //8-bit integers each. The first byte is the x position of the upper left corner
-    //of the room; the second byte is the y position of the upper left corner of the
-    //room; the third byte is the x size (width) of the room; and the fourth byte
-    //is the y size (height) of the room. r is the number of rooms in the dungeon.
-    for(int i = 0; i < d->num_rooms; i++){
-        uint8_t xpos = d->rooms[i].x;
-        uint8_t ypos = d->rooms[i].y;
-        uint8_t xdim = d->rooms[i].width;
-        uint8_t ydim = d->rooms[i].height;
-
-        fwrite(&xpos, sizeof(uint8_t), 1, f);
-        fwrite(&ypos, sizeof(uint8_t), 1, f);
-        fwrite(&xdim, sizeof(uint8_t), 1, f);
-        fwrite(&ydim, sizeof(uint8_t), 1, f);
-    }
-
-    //saves both stairs with x and y values
-    save_stairs(d,f);
-
-    fclose(f);
-}
-
 int save_stairs(dungeon_t *d, FILE *f){
     uint16_t numStairs;
+
+    //up
     numStairs = htobe16(count_up_stairs(d));
     fwrite(&numStairs, 2, 1, f);
     int x,y;
@@ -253,11 +199,13 @@ int save_stairs(dungeon_t *d, FILE *f){
             }
         }
     }
+
+    //down
     numStairs = htobe16(count_down_stairs(d));
     fwrite(&numStairs, 2, 1, f);
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x < WIDTH; x++){
-            if(dungeon[y][x] == '<'){
+            if(dungeon[y][x] == '>'){
                 numStairs--;
                 fwrite(&x, 1, 1, f);
                 fwrite(&y, 1, 1, f);
@@ -269,7 +217,7 @@ int save_stairs(dungeon_t *d, FILE *f){
 
 // helper method to count '<'
 int count_up_stairs(dungeon_t *d){
-    int x, y, i;
+    int x, y, i = 0;
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x < WIDTH; x++){
             if(dungeon[y][x] == '<'){
@@ -282,7 +230,7 @@ int count_up_stairs(dungeon_t *d){
 
 // helper method to count '>'
 int count_down_stairs(dungeon_t *d){
-    int x, y, i;
+    int x, y, i = 0;
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x < WIDTH; x++){
             if(dungeon[y][x] == '>'){
@@ -300,12 +248,12 @@ int read_dungeon_map(dungeon_t *d, FILE* f){
     for(y = 0; y < HEIGHT; y++){
         for(x = 0; x< WIDTH; x++){
             fread(&d->hardness[y][x], 1, 1, f);
-            if(&d->hardness[y][x] == 0){
+            if(d->hardness[y][x] == 0){
                 dungeon[y][x] = HALL;
-            } else if(&d->hardness[y][x] == 255){
+            } else if(d->hardness[y][x] == 255){
                 dungeon[y][x] = IMMUTABLE_WALL;
             } else{
-                dungeon[y][x] == ROCK;
+                dungeon[y][x] = ROCK;
                 //could factor in immutable
             }
         }
@@ -316,13 +264,20 @@ int read_dungeon_map(dungeon_t *d, FILE* f){
 // reads rooms from file and places them into dungeon array
 int read_rooms(dungeon_t *d, FILE *f){
     int i, y, x;
-    uint16_t r;
+    uint16_t room_count;
 
-    fread(&r, 2, 1, f);
-    d->num_rooms = be16toh(r);
-    d->rooms = malloc(sizeof (*d->rooms) * d->num_rooms);
+    fread(&room_count, sizeof(room_count), 1, f);
+    d->num_rooms = be16toh(room_count);
+
+    d->rooms = malloc(sizeof(*d->rooms) * d->num_rooms);
+    if (!d->rooms) {
+        fprintf(stderr, "Memory allocation failed for rooms.\n");
+        return 1;
+    }
 
     for(i = 0; i < d->num_rooms; i++){
+        uint8_t r;
+
         fread(&r, 1, 1, f);
         d->rooms[i].x = r;
         fread(&r, 1, 1, f);
@@ -366,15 +321,67 @@ int read_stairs(dungeon_t *d, FILE *f){
     }
     return 0;
 }
+int calculate_dungeon_size(dungeon_t *d){
+  return (1708 + (d->num_rooms * 4) + (count_up_stairs(d) * 2) + (count_down_stairs(d) * 2));
+}
 
-void load_dungeon(dungeon_t *d){
-    char semantic[sizeof("RLG327-S2025")];
-    FILE *f;
+int load_dungeon(dungeon_t *d, char *file){
+    char semantic[13];
+    FILE *f = NULL;
+    char *home;
+    char *filename;
+    int len;
     uint32_t save_to32;
 
-    fread(semantic, sizeof("RLG327-S2025") - 1, 1, f);
+    if (!file) {
+        if (!(home = getenv("HOME"))) {
+            fprintf(stderr, "\"HOME\" is undefined.  Using working directory.\n");
+            home = ".";
+        }
+
+        len = strlen(home) + strlen(SAVE_DIR) + strlen(DUNGEON_SAVE_FILE) + 3;
+
+        filename = malloc(len * sizeof(*filename));
+        if (!filename) {
+            fprintf(stderr, "Memory allocation failed for filename.\n");
+            return 1;
+        }
+
+        strcpy(filename, home);
+        strcat(filename, "/.rlg327/dungeon");
+
+        f = fopen(filename, "r");
+
+        if (!f) {
+            printf("fail to open %s\n", filename);
+            free(filename);
+            return 1;
+        }
+        free(filename);
+    } else {
+        f = fopen(file, "r");
+        if(!f){
+            printf("failed to open file %s\n", file);
+            return 1;
+        }
+    }
+
+    d->num_rooms = 0;
+
+    fread(semantic, sizeof(semantic) - 1, 1, f);
+    semantic[12] = '\0';
+
+    //printf("Read semantic: '%s'\n", semantic); 
+
+    if (strncmp(semantic, "RLG327-S2025", 12)) {
+        fprintf(stderr, "Not an RLG327 save file.\n");
+        exit(-1);
+    }
+    //file version
     fread(&save_to32, sizeof(save_to32), 1, f);
+    //file size
     fread(&save_to32, sizeof(save_to32), 1, f);
+    //save_to32 = be32toh(save_to32);
 
     fread(&d->PC.x, 1, 1, f);
     fread(&d->PC.y, 1, 1, f);
@@ -386,26 +393,210 @@ void load_dungeon(dungeon_t *d){
     read_stairs(d, f);
 
     fclose(f);
+    return 0;
+}
+
+int makedirectory(char *dir)
+{
+  char *slash;
+
+  for (slash = dir + strlen(dir); slash > dir && *slash != '/'; slash--)
+    ;
+
+  if (slash == dir) {
+    return 0;
+  }
+
+  if (mkdir(dir, 0700)) {
+    if (errno != ENOENT && errno != EEXIST) {
+      fprintf(stderr, "mkdir(%s): %s\n", dir, strerror(errno));
+      return 1;
+    }
+    if (*slash != '/') {
+      return 1;
+    }
+    *slash = '\0';
+    if (makedirectory(dir)) {
+      *slash = '/';
+      return 1;
+    }
+
+    *slash = '/';
+    if (mkdir(dir, 0700) && errno != EEXIST) {
+      fprintf(stderr, "mkdir(%s): %s\n", dir, strerror(errno));
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int save_dungeon(dungeon_t *d, char *file){
+    char *home;
+    char *dungeon_file = NULL;
+    FILE *f = NULL;
+    int dungeon_file_length;
+
+    if(!file){
+        if(!(home = getenv("HOME"))){
+            printf("undefined home\n");
+            home = ".";
+        }
+        dungeon_file_length = strlen(home) + strlen("/.rlg327") + strlen("/dungeon")+ 1; // +1 for the null byte
+        dungeon_file = malloc(dungeon_file_length * sizeof (*dungeon_file));
+        
+        strcpy(dungeon_file, home);
+        strcat(dungeon_file, "/.rlg327");
+
+        makedirectory(dungeon_file);
+        //strcat(dungeon_file, "/");
+        strcat(dungeon_file, DUNGEON_SAVE_FILE);
+
+        if (!(f = fopen(dungeon_file, "w"))) {
+            perror(dungeon_file);
+            free(dungeon_file);
+            return 1;
+        }
+        free(dungeon_file);
+    } else {
+        if (!(f = fopen(file, "w"))) {
+            perror(file);
+            return 1;
+        }
+  }
+    if (!f) {
+        printf("Error opening file.\n");
+        return 1;
+    }
+
+    printf("Dungeon saved successfully!\n");
+
+
+    uint16_t write_to16;
+    uint32_t write_to32;
+
+    char *semantic = "RLG327-S2025";
+    fwrite(semantic, 1, strlen(semantic), f);
+
+    
+    write_to32 = htobe32(DUNGEON_VERSIONX);
+    fwrite(&write_to32, sizeof(write_to32), 1, f);
+
+    //integer size file
+    write_to32 = htobe32((uint32_t)calculate_dungeon_size(d));
+    fwrite(&write_to32, sizeof (write_to32), 1, f);
+
+    //A pair of unsigned 8-bit integers giving the x and y position of the PC
+    uint8_t x = d->PC.x;
+    uint8_t y = d->PC.y;
+    fwrite(&x, 1, 1, f);
+    fwrite(&y, 1, 1, f);
+    
+    for(int i = 0; i < HEIGHT; i++){
+        for(int j = 0; j <WIDTH; j++){
+            fwrite(&d->hardness[i][j], 1,1,f);
+        }
+    }
+    
+   //r, an unsigned 16-bit integer giving the number of rooms in the dungeon (2 bytes)
+   write_to16 = htobe16((uint16_t)d->num_rooms);
+   fwrite(&write_to16, sizeof(write_to16), 1, f);
+
+    //rooms
+    for(int i = 0; i < d->num_rooms; i++){
+        uint8_t xpos = d->rooms[i].x;
+        uint8_t ypos = d->rooms[i].y;
+        uint8_t xdim = d->rooms[i].width;
+        uint8_t ydim = d->rooms[i].height;
+
+        fwrite(&xpos, sizeof(uint8_t), 1, f);
+        fwrite(&ypos, sizeof(uint8_t), 1, f);
+        fwrite(&xdim, sizeof(uint8_t), 1, f);
+        fwrite(&ydim, sizeof(uint8_t), 1, f);
+    }
+    save_stairs(d,f);
+    fclose(f);
+    return 0;
+}
+
+void dungeon_generate(dungeon_t *d){
+    generate_rooms_character(d);
+    generate_corridor(d);
+    generate_stairs(d);
 }
 
 
-
-
+void usage(const char *s){
+    fprintf(stderr, "%s [--load|--save|--rand]", s);
+}
 
 int main(int argc, char *argv[]){
+    int i;
+    //long int arg; 
+    action_t action;
+    char *saveFile = NULL, *loadFile = NULL;
     dungeon_t dungeon;
     srand(time(NULL));
 
-    dungeon_init(&dungeon);
-    generate_rooms_character(&dungeon);
-    
-    // optional to place next two functions within generate_rooms
-    generate_corridor(&dungeon);
-    generate_stairs(&dungeon);
-    // ^^
-    dungeon_print();
+    if (argc > 1) {
+        for (i = 1; i < argc; i++) {
+            if (strcmp(argv[i], "--load") == 0) {
+                if (i + 1 < argc) {
+                    loadFile = argv[++i];
+                    action = action_load;  // Set action to load if flag is specified
+                } else {
+                    usage(argv[0]);
+                    return 1;
+                }
+            } else if (strcmp(argv[i], "--save") == 0) {
+                if (i + 1 < argc) {
+                    saveFile = argv[++i];
+                    action = action_save;  // Set action to save if flag is specified
+                } else {
+                    usage(argv[0]);
+                    return 1;
+                }
+            } else if (strcmp(argv[i], "--rand") == 0) {
+                action = action_rand;  // Default random generation if no other flags
+            } else {
+                usage(argv[0]);  // Unknown argument
+                return 1;
+            }
+        }
+    } else {
+        usage(argv[0]);
+        return 1;
+    }
 
-    // frees rooms memory
+    dungeon_init(&dungeon);
+
+    switch (action){
+        case action_load:
+            if(loadFile){
+                load_dungeon(&dungeon, loadFile);
+            } else{
+                usage(argv[0]);
+                return 1;
+            }
+            break;
+        case action_save:
+            if(saveFile){
+                dungeon_generate(&dungeon);
+                save_dungeon(&dungeon, saveFile);
+            } else{
+                usage(argv[0]);
+                return 1;
+            }
+            break;
+        case action_rand:
+            dungeon_generate(&dungeon);
+            break;
+        default:
+            usage(argv[0]);
+            return 1;
+    }    
+    dungeon_print();
+    //free(dungeon.hardness);
     free(dungeon.rooms);
     return 0;
 }

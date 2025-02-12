@@ -4,6 +4,8 @@
 
 
 #define DUNGEON_VERSIONX 0
+#define DUNGEON_SAVE_FILE "dungeon"
+#define SAVE_DIR ".rlg327"
 
 #define HEIGHT 21
 #define WIDTH 80
@@ -12,7 +14,7 @@
 #define ROCK ' '
 #define ROOM '.'
 #define HALL '#'
-#define IMMUTABLE_WALL 255
+#define IMMUTABLE_WALL ' '
 
 #define MIN_WIDTH 4
 #define MIN_HEIGHT 3
@@ -28,8 +30,10 @@ typedef struct Room{
 
 typedef enum{
     action_save,
-    action_load
-} action;
+    action_load,
+    action_read,
+    action_rand
+} action_t;
 
 typedef struct {
     uint8_t y;
@@ -50,6 +54,14 @@ int is_valid(int, int, int, int);
 void generate_rooms_character(dungeon_t *d);
 void generate_corridor(dungeon_t *d);
 void generate_stairs(dungeon_t *d);
+int count_up_stairs(dungeon_t *d);
+int count_down_stairs(dungeon_t *d);
+int read_dungeon_map(dungeon_t *d, FILE* f);
+int read_rooms(dungeon_t *d, FILE *f);
+int read_stairs(dungeon_t *d, FILE *f);
+int load_dungeon(dungeon_t *d, char *f);
+int save_dungeon(dungeon_t *d, char *f);
+int save_stairs(dungeon_t *d, FILE *f);
 
 
 #endif
