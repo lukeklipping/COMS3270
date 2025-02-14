@@ -27,6 +27,12 @@ typedef struct Room{
     int x, y, height, width;
 }Room;
 
+typedef struct path{
+    int xPos;
+    int yPos;
+    heap_node_t *heapNode;
+} path_t;
+
 
 typedef enum{
     action_save,
@@ -45,12 +51,14 @@ typedef struct dungeon{
     int num_rooms;
     Room *rooms;
     uint8_t hardness[HEIGHT][WIDTH];
+    int PC_location[HEIGHT][WIDTH];
+    int PC_T_location[HEIGHT][WIDTH];
     pair_t PC;
     //pair_t *stairs;
 }dungeon_t;
 
-void dungeon_init();
-void dungeon_print();
+void dungeon_init(dungeon_t *d);
+void dungeon_print(dungeon_t *d);
 int is_valid(dungeon_t *d, int, int, int, int);
 void generate_rooms_character(dungeon_t *d);
 void generate_corridor(dungeon_t *d);

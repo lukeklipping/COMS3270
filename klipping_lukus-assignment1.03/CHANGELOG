@@ -2,3 +2,5 @@
                 added d->map to all functions
 2/13/2025 2:20: added new files 
                 heap.h and heap.c for path finding
+2/13/2025 1:00: add djikstra_tunnel
+
