@@ -7,8 +7,15 @@
 #include<errno.h>
 
 #include "dungeonGeneration.h"
-#include "heap.h"
 
+// could not find a better way for cmp pointer
+static dungeon_t *dun_cmp = NULL;
+
+typedef struct path{
+    heap_node_t *heapNode;
+    int xP;
+    int yP;
+} path_t;
 
 //char dungeon[HEIGHT][WIDTH];
 // fills dungeon with rock and initializes hardness
@@ -523,171 +530,290 @@ void usage(const char *s){
 }
 
 // heap uses int32_t
-int32_t compare_distance(const void *key, const void *with) {
-  return ((int32_t) d.pc_distance[((path_t *) key)->xpos][((path_t *) key)->ypos] - (int32_t) d.pc_distance[((path_t *) with)->xpos]
-  [((path_t *) with)->ypos]);
+// non tunnel
+static int32_t compare_distance(const void *key, const void *with) {
+  return ((int32_t) dun_cmp->PC_N[((path_t *) key)->yP][((path_t *) key)->xP] -
+          (int32_t) dun_cmp->PC_N[((path_t *) with)->yP][((path_t *) with)->xP]);
+}
+
+
+//
+static int32_t compare_tunnel_distance(const void *key, const void *with) {
+  return ((int32_t) dun_cmp->PC_T[((path_t *) key)->yP][((path_t *) key)->xP] -
+          (int32_t) dun_cmp->PC_T[((path_t *) with)->yP][((path_t *) with)->xP]);
 }
 
 /*
 non_tunnel monsters can only go through '.','#', and '@'
-
 */
 void djikstra_non_tunnel(dungeon_t *d){
     heap_t heap;
-    path_t path[HEIGHT][WIDTH], *tmp;
+    static path_t path[HEIGHT][WIDTH], *tmp;
     int i, j;
-    
-    // initialize non tunnel path map
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
-            path[i][j].xPos = i;
-            path[i][j].yPos = j;
+    int init = 0;
+
+    if(!init){
+        init = 1;
+        dun_cmp = d;
+        // initialize tunnel path map
+        for(i = 0; i < HEIGHT; i++){
+            for(j = 0; j < WIDTH; j++){
+                path[i][j].yP = i;
+                path[i][j].xP = j;
+            }
         }
     }
     // initialize @ grid
     for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
-            d->PC[i][j] = 255;
+        for(j = 0; j < WIDTH; j++){
+            d->PC_N[i][j] = 255;
         }
     }
-    d->PC_location[d->PC.y][d->PC.y] = 0;
+    d->PC_N[d->PC.y][d->PC.x] = 0;
+
     heap_init(&heap, compare_distance, NULL);
     
     // insert into heap 
     for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
+        for(j = 0; j < WIDTH; j++){
             //insert into heap if walkable character
             //otherwise set null
-            if(d->map[i][j] == ROOM || d->map[i][j] == HALL || d->map[i][j] == PLAYER){
+            if(d->map[i][j] == ROOM || d->map[i][j] == HALL || d->map[i][j] == PLAYER  || d->map[i][j] == '>' || d->map[i][j] == '<'){
                 path[i][j].heapNode = heap_insert(&heap, &path[i][j]);
-            } else{
-                path[i][j].heapNode = NULL;
+            }
+        } 
+    }
+    
+
+        while((tmp = heap_remove_min(&heap))){
+        // set min node to null removing from heap
+        tmp->heapNode = NULL;
+
+        // explore all 8 neighbors
+
+        // top left neighbor cell
+        // compares current distance to new calculated distance
+        if ((path[tmp->yP - 1][tmp->xP - 1].heapNode) && 
+            (d->PC_N[tmp->yP - 1][tmp->xP - 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP - 1][tmp->xP - 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP - 1].heapNode);
+        }
+        // top
+        if ((path[tmp->yP - 1][tmp->xP].heapNode) && 
+            (d->PC_N[tmp->yP - 1][tmp->xP] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP - 1][tmp->xP] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP].heapNode);
+        }
+        // top right
+        if ((path[tmp->yP - 1][tmp->xP + 1].heapNode) && 
+            (d->PC_N[tmp->yP - 1][tmp->xP + 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP - 1][tmp->xP + 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP + 1].heapNode);
+        }
+        // left
+        if ((path[tmp->yP][tmp->xP - 1].heapNode) && 
+            (d->PC_N[tmp->yP][tmp->xP - 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP][tmp->xP - 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP - 1].heapNode);
+        }
+        // right
+        if ((path[tmp->yP][tmp->xP + 1].heapNode) && 
+            (d->PC_N[tmp->yP][tmp->xP + 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP][tmp->xP + 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP + 1].heapNode);
+        }
+        // bottom left
+        if ((path[tmp->yP + 1][tmp->xP - 1].heapNode) && 
+            (d->PC_N[tmp->yP + 1][tmp->xP - 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP + 1][tmp->xP - 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP - 1].heapNode);
+        }
+        // bottom
+        if ((path[tmp->yP + 1][tmp->xP].heapNode) && 
+            (d->PC_N[tmp->yP + 1][tmp->xP] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP + 1][tmp->xP] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP].heapNode);
+        }
+        // bottom right
+        if ((path[tmp->yP + 1][tmp->xP + 1].heapNode) && 
+            (d->PC_N[tmp->yP + 1][tmp->xP + 1] >
+            d->PC_N[tmp->yP][tmp->xP] + 1)) {
+                d->PC_N[tmp->yP + 1][tmp->xP + 1] = d->PC_N[tmp->yP][tmp->xP] + 1;
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP + 1].heapNode);
+        }
+    }
+    //delete at end to free 
+    heap_delete(&heap);
+}
+
+// hardness  = 1 + h / 85
+#define hardness_weight(x, y)                      \
+  ((d->hardness[y][x] / 85) + 1)
+
+void djikstra_tunnel(dungeon_t *d){
+    heap_t heap;
+    static path_t path[HEIGHT][WIDTH];
+    path_t *tmp;
+    int i, j;
+    int heapSize;
+    int init = 0;
+
+    if(!init){
+        init = 1;
+        dun_cmp = d;
+        // initialize tunnel path map
+        for(i = 0; i < HEIGHT; i++){
+            for(j = 0; j < WIDTH; j++){
+                path[i][j].yP = i;
+                path[i][j].xP = j;
+            }
+        }
+    }
+    
+
+    for(i = 0; i < HEIGHT; i++){
+        for(j = 0; j < WIDTH; j++){
+            d->PC_T[i][j] = 255;
+        }
+    }
+    d->PC_T[d->PC.y][d->PC.x] = 0;
+
+    heap_init(&heap, compare_tunnel_distance, NULL);
+    
+    // insert into heap 
+    for(i = 0; i < HEIGHT; i++){
+        for(j = 0; j < WIDTH; j++){
+            //insert into heap if wall is not immutable (255)
+            if(d->hardness[i][j] != 255){
+                path[i][j].heapNode = heap_insert(&heap, &path[i][j]);
             }
         }
     }
 
-    while(tmp = (*path_t)(heap_remove_min(&heap))){
+
+    while((tmp = heap_remove_min(&heap))){
         // set min node to null removing from heap
         tmp->heapNode = NULL;
 
         //explore all 8 neighbors
+        // top left
+        // top left
+        if ((path[tmp->yP - 1][tmp->xP - 1].heapNode) && 
+            (d->PC_T[tmp->yP - 1][tmp->xP - 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP - 1][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP - 1].heapNode);
+        }
 
-        // top left neighbor cell
-        //compares current distance to new calc distance
-        if((path[tmp->xPos - 1][tmp->yPos + 1].heapNode) && 
-            (d->PC_location[tmp->xPos - 1][tmp->yPos + 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos - 1][tmp->yPos + 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos - 1][tmp->yPos + 1].heapNode);
+        // top
+        if ((path[tmp->yP - 1][tmp->xP].heapNode) && 
+            (d->PC_T[tmp->yP - 1][tmp->xP] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP - 1][tmp->xP] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP].heapNode);
         }
-        // top middle
-        if((path[tmp->xPos][tmp->yPos - 1].heapNode) && 
-            (d->PC_location[tmp->xPos][tmp->yPos - 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos - 1][tmp->yPos - 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos][tmp->yPos - 1].heapNode);
-        }
+
         // top right
-        if((path[tmp->xPos - 1][tmp->yPos - 1].heapNode) && 
-            (d->PC_location[tmp->xPos - 1][tmp->yPos - 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos - 1][tmp->yPos - 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos - 1][tmp->yPos - 1].heapNode);
+        if ((path[tmp->yP - 1][tmp->xP + 1].heapNode) && 
+            (d->PC_T[tmp->yP - 1][tmp->xP + 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP - 1][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP + 1].heapNode);
         }
-        // middle left
-        if((path[tmp->xPos - 1][tmp->yPos].heapNode) && 
-            (d->PC_location[tmp->xPos - 1][tmp->yPos]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos - 1][tmp->yPos] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos - 1][tmp->yPos].heapNode);
+
+        // left
+        if ((path[tmp->yP][tmp->xP - 1].heapNode) && 
+            (d->PC_T[tmp->yP][tmp->xP - 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP - 1].heapNode);
         }
-        // middle right
-        if((path[tmp->xPos + 1][tmp->yPos].heapNode) && 
-            (d->PC_location[tmp->xPos + 1][tmp->yPos]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos + 1][tmp->yPos] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos + 1][tmp->yPos].heapNode);
+
+        // right
+        if ((path[tmp->yP][tmp->xP + 1].heapNode) && 
+            (d->PC_T[tmp->yP][tmp->xP + 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP + 1].heapNode);
         }
+
         // bottom left
-        if((path[tmp->xPos - 1][tmp->yPos + 1].heapNode) && 
-            (d->PC_location[tmp->xPos - 1][tmp->yPos + 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos - 1][tmp->yPos + 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos - 1][tmp->yPos + 1].heapNode);
+        if ((path[tmp->yP + 1][tmp->xP - 1].heapNode) && 
+            (d->PC_T[tmp->yP + 1][tmp->xP - 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP + 1][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP - 1].heapNode);
         }
-        // bottom middle
-        if((path[tmp->xPos][tmp->yPos - 1].heapNode) && 
-            (d->PC_location[tmp->xPos][tmp->yPos - 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos][tmp->yPos - 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos][tmp->yPos - 1].heapNode);
+
+        // bottom
+        if ((path[tmp->yP + 1][tmp->xP].heapNode) && 
+            (d->PC_T[tmp->yP + 1][tmp->xP] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP + 1][tmp->xP] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP].heapNode);
         }
+
         // bottom right
-        if((path[tmp->xPos + 1][tmp->yPos - 1].heapNode) && 
-            (d->PC_location[tmp->xPos + 1][tmp->yPos - 1]) > 
-                d->PC_location[tmp->xPos][tmp->yPos] + 1){
-                    //replaces distance  and decreases heap
-                    d->PC_location[tmp->xPos + 1][tmp->yPos - 1] = d->PC_location[tmp->xPos][tmp->yPos] + 1;
-                    heap_decrease_key_no_replace(&heap, path[tmp->xPos + 1][tmp->yPos - 1].heapNode);
+        if ((path[tmp->yP + 1][tmp->xP + 1].heapNode) && 
+            (d->PC_T[tmp->yP + 1][tmp->xP + 1] > 
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+                d->PC_T[tmp->yP + 1][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
+                hardness_weight(tmp->xP, tmp->yP);
+                heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP + 1].heapNode);
         }
+   
     }
-    
     //delete at end to free 
     heap_delete(&heap);
 }
 
-void djikstra_tunnel(dungeon_t *d){
-    heap_t heap;
-    path_t path[HEIGHT][WIDTH], *tmp;
+void tunnel_map(dungeon_t *d){
     int i, j;
 
-    // initialize tunnel path map
     for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
-            path[i][j].xPos = i;
-            path[i][j].yPos = j;
-        }
-    }
-    // initialize @ grid
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
-            d->PC[i][j] = 255;
-        }
-    }
-    d->PC_T_location[d->PC.y][d->PC.y] = 0;
-
-    /*
-        TODO
-
-        TUNNEL COMPARATOR
-    */
-
-    heap_init(&heap, compare_distance, NULL);
-    
-    // insert into heap 
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0l j < WIDTH; j++){
-            //insert into heap if wall is not immutable (255)
-            //otherwise set null
-            if(d->hardness[i][j] != 255){
-                path[i][j].heapNode = heap_insert(&heap, &path[i][j]);
+        for(j = 0; j < WIDTH; j++){
+            if(d->PC_T[i][j] != 255){
+                printf("%d", d->PC_T[i][j] % 10);
             } else{
-                path[i][j].heapNode = NULL;
+            printf("%c", d->map[i][j]);
             }
-        }
+           
+        } 
     }
-
-    //delete at end to free 
-    heap_delete(&heap);
 }
 
+void non_tunnel_map(dungeon_t *d){
+    int i, j;
+
+    for(i = 0; i < HEIGHT; i++){
+        for(j = 0; j < WIDTH; j++){
+           if(d->PC_N[i][j] != 255){
+                printf("%d", d->PC_N[i][j] % 10);
+            } else{
+            printf("%c", d->map[i][j]);
+            }
+        } 
+    }
+}
+
+
+int delete_dungeon(dungeon_t *d){
+    free(d->rooms);
+}
 
 // main
 int main(int argc, char *argv[]){
@@ -754,7 +880,16 @@ int main(int argc, char *argv[]){
             return 1;
     }    
     dungeon_print(&dungeon);
-    free(dungeon.rooms);
+
+    djikstra_tunnel(&dungeon);
+    djikstra_non_tunnel(&dungeon);
+    printf("\nTunnel map\n");
+    tunnel_map(&dungeon);
+    printf("\nNon-Tunnel map\n");
+    non_tunnel_map(&dungeon);
+
+    delete_dungeon(&dungeon);
+
     return 0;
 }
 

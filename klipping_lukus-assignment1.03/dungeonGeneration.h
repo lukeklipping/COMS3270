@@ -2,6 +2,8 @@
 #define DUNGEONGENERATION_H
 #include<stdint.h>
 
+#include "heap.h"
+
 
 #define DUNGEON_VERSIONX 0
 #define DUNGEON_SAVE_FILE "dungeon"
@@ -27,13 +29,7 @@ typedef struct Room{
     int x, y, height, width;
 }Room;
 
-typedef struct path{
-    int xPos;
-    int yPos;
-    heap_node_t *heapNode;
-} path_t;
-
-
+//actions for flags
 typedef enum{
     action_save,
     action_load,
@@ -51,11 +47,12 @@ typedef struct dungeon{
     int num_rooms;
     Room *rooms;
     uint8_t hardness[HEIGHT][WIDTH];
-    int PC_location[HEIGHT][WIDTH];
-    int PC_T_location[HEIGHT][WIDTH];
+    int PC_N[HEIGHT][WIDTH];
+    int PC_T[HEIGHT][WIDTH];
     pair_t PC;
     //pair_t *stairs;
 }dungeon_t;
+
 
 void dungeon_init(dungeon_t *d);
 void dungeon_print(dungeon_t *d);
