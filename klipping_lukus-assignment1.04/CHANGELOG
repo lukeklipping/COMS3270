@@ -1,0 +1,6 @@
+2/19/2025 1:40: Moving methods
+                moved path methods to path.h and path.c
+2/19/2025 1:45: removed heapsize
+                accidental unused variable
+2/19/2025 1:45: updated makefile
+
