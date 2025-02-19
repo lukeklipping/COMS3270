@@ -546,6 +546,7 @@ static int32_t compare_tunnel_distance(const void *key, const void *with) {
 /*
 non_tunnel monsters can only go through '.','#', and '@'
 */
+// djikstra algo for non tunneling monsters
 void djikstra_non_tunnel(dungeon_t *d){
     heap_t heap;
     static path_t path[HEIGHT][WIDTH], *tmp;
@@ -654,9 +655,11 @@ void djikstra_non_tunnel(dungeon_t *d){
 }
 
 // hardness  = 1 + h / 85
-#define hardness_weight(x, y)                      \
-  ((d->hardness[y][x] / 85) + 1)
+int hardness_weight(dungeon_t *d, int x, int y){
+    return((d->hardness[y][x] / 85) + 1);
+}
 
+//djikstra algorithm for tunneling monsters
 void djikstra_tunnel(dungeon_t *d){
     heap_t heap;
     static path_t path[HEIGHT][WIDTH];
@@ -683,6 +686,7 @@ void djikstra_tunnel(dungeon_t *d){
             d->PC_T[i][j] = 255;
         }
     }
+    //sets pc pos
     d->PC_T[d->PC.y][d->PC.x] = 0;
 
     heap_init(&heap, compare_tunnel_distance, NULL);
@@ -707,72 +711,75 @@ void djikstra_tunnel(dungeon_t *d){
         // top left
         if ((path[tmp->yP - 1][tmp->xP - 1].heapNode) && 
             (d->PC_T[tmp->yP - 1][tmp->xP - 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP - 1][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP - 1].heapNode);
         }
 
         // top
+        //checks if valid entry in heapNode
+        // if path[y - 1][x - 1] in node && pTunnel[y-1][x-1] > pTunnel[y][x] + hardness
+            // decrease heap at that location
         if ((path[tmp->yP - 1][tmp->xP].heapNode) && 
             (d->PC_T[tmp->yP - 1][tmp->xP] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP - 1][tmp->xP] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP].heapNode);
         }
 
         // top right
         if ((path[tmp->yP - 1][tmp->xP + 1].heapNode) && 
             (d->PC_T[tmp->yP - 1][tmp->xP + 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP - 1][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP - 1][tmp->xP + 1].heapNode);
         }
 
         // left
         if ((path[tmp->yP][tmp->xP - 1].heapNode) && 
             (d->PC_T[tmp->yP][tmp->xP - 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP - 1].heapNode);
         }
 
         // right
         if ((path[tmp->yP][tmp->xP + 1].heapNode) && 
             (d->PC_T[tmp->yP][tmp->xP + 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP][tmp->xP + 1].heapNode);
         }
 
         // bottom left
         if ((path[tmp->yP + 1][tmp->xP - 1].heapNode) && 
             (d->PC_T[tmp->yP + 1][tmp->xP - 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP + 1][tmp->xP - 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP - 1].heapNode);
         }
 
         // bottom
         if ((path[tmp->yP + 1][tmp->xP].heapNode) && 
             (d->PC_T[tmp->yP + 1][tmp->xP] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP + 1][tmp->xP] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP].heapNode);
         }
 
         // bottom right
         if ((path[tmp->yP + 1][tmp->xP + 1].heapNode) && 
             (d->PC_T[tmp->yP + 1][tmp->xP + 1] > 
-            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(tmp->xP, tmp->yP))) {
+            d->PC_T[tmp->yP][tmp->xP] + hardness_weight(d, tmp->xP, tmp->yP))) {
                 d->PC_T[tmp->yP + 1][tmp->xP + 1] = d->PC_T[tmp->yP][tmp->xP] + 
-                hardness_weight(tmp->xP, tmp->yP);
+                hardness_weight(d, tmp->xP, tmp->yP);
                 heap_decrease_key_no_replace(&heap, path[tmp->yP + 1][tmp->xP + 1].heapNode);
         }
    
@@ -786,10 +793,12 @@ void tunnel_map(dungeon_t *d){
 
     for(i = 0; i < HEIGHT; i++){
         for(j = 0; j < WIDTH; j++){
-            if(d->PC_T[i][j] != 255){
+            if(i == d->PC.y && j == d->PC.x) {
+                printf("%c", PLAYER);
+            } else if(d->PC_T[i][j] != 255){
                 printf("%d", d->PC_T[i][j] % 10);
             } else{
-            printf("%c", d->map[i][j]);
+                printf("%c", d->map[i][j]);
             }
            
         } 
@@ -801,10 +810,12 @@ void non_tunnel_map(dungeon_t *d){
 
     for(i = 0; i < HEIGHT; i++){
         for(j = 0; j < WIDTH; j++){
-           if(d->PC_N[i][j] != 255){
+            if(i == d->PC.y && j == d->PC.x){
+                printf("%c", PLAYER);
+            } else if(d->PC_N[i][j] != 255){
                 printf("%d", d->PC_N[i][j] % 10);
             } else{
-            printf("%c", d->map[i][j]);
+                printf("%c", d->map[i][j]);
             }
         } 
     }
@@ -883,10 +894,11 @@ int main(int argc, char *argv[]){
 
     djikstra_tunnel(&dungeon);
     djikstra_non_tunnel(&dungeon);
-    printf("\nTunnel map\n");
-    tunnel_map(&dungeon);
     printf("\nNon-Tunnel map\n");
     non_tunnel_map(&dungeon);
+    printf("\nTunnel map\n");
+    tunnel_map(&dungeon);
+    
 
     delete_dungeon(&dungeon);
 
