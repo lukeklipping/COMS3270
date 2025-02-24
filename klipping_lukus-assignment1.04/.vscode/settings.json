@@ -3,6 +3,7 @@
         "array": "cpp",
         "stat.h": "c",
         "stdio.h": "c",
-        "dungeongeneration.h": "c"
+        "dungeongeneration.h": "c",
+        "monster.h": "c"
     }
 }

@@ -2,10 +2,12 @@
 #include "dungeonGeneration.h"
 #include "heap.h"
 
-void character_delete(void *c){
+void character_delete(void *c)
+{
     character_t *ch;
 
-    if(c){
+    if (c)
+    {
         ch = c;
     }
 }
