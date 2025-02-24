@@ -12,6 +12,8 @@ typedef struct path{
 int hardness_weight(dungeon_t *d, int, int);
 void djikstra_tunnel(dungeon_t *d);
 void djikstra_non_tunnel(dungeon_t *d);
+void tunnel_map(dungeon_t *d);
+void non_tunnel_map(dungeon_t *d);
 
 
 #endif

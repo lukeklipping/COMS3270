@@ -3,4 +3,14 @@
 2/19/2025 1:45: removed heapsize
                 accidental unused variable
 2/19/2025 1:45: updated makefile
+2/20/2025 2:00: moved methods  
+                moved tunnel and non tunnel map into path.h and path.c
+2/20/2025 2:00: Made character_t struct
+2/20/2025 2:00: Added character map array to dungeon_t
+                will need to be malloc
+2/20/2025 2:02: changing literals
+                changed height and widht to dungeon_y and x
+2/24/2025 12:01: made new files
+                readWriteDungeon.c and readWriteDungeon.h to make files smaller an organize.
+2/24/2025 12:05: Above working correctly
 

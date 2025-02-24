@@ -23,7 +23,7 @@ non_tunnel monsters can only go through '.','#', and '@'
 // djikstra algo for non tunneling monsters
 void djikstra_non_tunnel(dungeon_t *d){
     heap_t heap;
-    static path_t path[HEIGHT][WIDTH], *tmp;
+    static path_t path[DUNGEON_Y][DUNGEON_X], *tmp;
     int i, j;
     int init = 0;
 
@@ -31,16 +31,16 @@ void djikstra_non_tunnel(dungeon_t *d){
         init = 1;
         dun_cmp = d;
         // initialize tunnel path map
-        for(i = 0; i < HEIGHT; i++){
-            for(j = 0; j < WIDTH; j++){
+        for(i = 0; i < DUNGEON_Y; i++){
+            for(j = 0; j < DUNGEON_X; j++){
                 path[i][j].yP = i;
                 path[i][j].xP = j;
             }
         }
     }
     // initialize @ grid
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0; j < WIDTH; j++){
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
             d->PC_N[i][j] = 255;
         }
     }
@@ -49,8 +49,8 @@ void djikstra_non_tunnel(dungeon_t *d){
     heap_init(&heap, compare_distance, NULL);
     
     // insert into heap 
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0; j < WIDTH; j++){
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
             //insert into heap if walkable character
             //otherwise set null
             if(d->map[i][j] == ROOM || d->map[i][j] == HALL || d->map[i][j] == PLAYER  || d->map[i][j] == '>' || d->map[i][j] == '<'){
@@ -136,7 +136,7 @@ int hardness_weight(dungeon_t *d, int x, int y){
 //djikstra algorithm for tunneling monsters
 void djikstra_tunnel(dungeon_t *d){
     heap_t heap;
-    static path_t path[HEIGHT][WIDTH];
+    static path_t path[DUNGEON_Y][DUNGEON_X];
     path_t *tmp;
     int i, j;
     int init = 0;
@@ -145,8 +145,8 @@ void djikstra_tunnel(dungeon_t *d){
         init = 1;
         dun_cmp = d;
         // initialize tunnel path map
-        for(i = 0; i < HEIGHT; i++){
-            for(j = 0; j < WIDTH; j++){
+        for(i = 0; i < DUNGEON_Y; i++){
+            for(j = 0; j < DUNGEON_X; j++){
                 path[i][j].yP = i;
                 path[i][j].xP = j;
             }
@@ -154,8 +154,8 @@ void djikstra_tunnel(dungeon_t *d){
     }
     
 
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0; j < WIDTH; j++){
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
             d->PC_T[i][j] = 255;
         }
     }
@@ -165,8 +165,8 @@ void djikstra_tunnel(dungeon_t *d){
     heap_init(&heap, compare_tunnel_distance, NULL);
     
     // insert into heap 
-    for(i = 0; i < HEIGHT; i++){
-        for(j = 0; j < WIDTH; j++){
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
             //insert into heap if wall is not immutable (255)
             if(d->hardness[i][j] != 255){
                 path[i][j].heapNode = heap_insert(&heap, &path[i][j]);
@@ -259,4 +259,37 @@ void djikstra_tunnel(dungeon_t *d){
     }
     //delete at end to free 
     heap_delete(&heap);
+}
+
+void tunnel_map(dungeon_t *d){
+    int i, j;
+
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
+            if(i == d->PC.y && j == d->PC.x) {
+                printf("%c", PLAYER);
+            } else if(d->PC_T[i][j] != 255){
+                printf("%d", d->PC_T[i][j] % 10);
+            } else{
+                printf("%c", d->map[i][j]);
+            }
+           
+        } 
+    }
+}
+
+void non_tunnel_map(dungeon_t *d){
+    int i, j;
+
+    for(i = 0; i < DUNGEON_Y; i++){
+        for(j = 0; j < DUNGEON_X; j++){
+            if(i == d->PC.y && j == d->PC.x){
+                printf("%c", PLAYER);
+            } else if(d->PC_N[i][j] != 255){
+                printf("%d", d->PC_N[i][j] % 10);
+            } else{
+                printf("%c", d->map[i][j]);
+            }
+        } 
+    }
 }

@@ -2,8 +2,8 @@
 
 all: dungeonGeneration
 	
-dungeonGeneration: heap.o dungeonGeneration.o path.o
-	gcc -o dungeon dungeonGeneration.o heap.o path.o
+dungeonGeneration: heap.o dungeonGeneration.o path.o readWriteDungeon.o
+	gcc -o dungeon dungeonGeneration.o heap.o path.o readWriteDungeon.o
 
 heap.o: heap.c heap.h
 	gcc -ggdb -Wall -c heap.c
@@ -13,6 +13,9 @@ assign103.o:
 
 path.o: path.c path.h
 	gcc -ggdb -Wall -c path.c
+
+readWrite.o: readWriteDungeon.c readWriteDungeon.h
+	gcc -ggdb -Wall -c readWriteDungeon.c
 
 clean:
 	rm -f dungeon *~ *.o

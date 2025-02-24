@@ -9,8 +9,8 @@
 #define DUNGEON_SAVE_FILE "dungeon"
 #define SAVE_DIR ".rlg327"
 
-#define HEIGHT 21
-#define WIDTH 80
+#define DUNGEON_Y 21
+#define DUNGEON_X 80
 
 #define PLAYER '@'
 #define ROCK ' '
@@ -18,8 +18,8 @@
 #define HALL '#'
 #define IMMUTABLE_WALL ' '
 
-#define MIN_WIDTH 4
-#define MIN_HEIGHT 3
+#define MIN_DUNGEON_X 4
+#define MIN_DUNGEON_Y 3
 
 //arbitrary value to set upper limit
 #define MAX_ROOMS 8
@@ -37,18 +37,23 @@ typedef enum{
     action_rand
 } action_t;
 
+typedef struct{
+
+} character_t;
+
 typedef struct {
     uint8_t y;
     uint8_t x;
 } pair_t;
 
 typedef struct dungeon{
-    char map[HEIGHT][WIDTH];
+    char map[DUNGEON_Y][DUNGEON_X];
     int num_rooms;
     Room *rooms;
-    uint8_t hardness[HEIGHT][WIDTH];
-    int PC_N[HEIGHT][WIDTH];
-    int PC_T[HEIGHT][WIDTH];
+    uint8_t hardness[DUNGEON_Y][DUNGEON_X];
+    int PC_N[DUNGEON_Y][DUNGEON_X];
+    int PC_T[DUNGEON_Y][DUNGEON_X];
+    character_t *character[DUNGEON_Y][DUNGEON_X];
     pair_t PC;
     //pair_t *stairs;
 }dungeon_t;
