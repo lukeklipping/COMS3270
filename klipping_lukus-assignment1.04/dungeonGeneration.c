@@ -200,6 +200,19 @@ int delete_dungeon(dungeon_t *d){
     free(d->rooms);
 }
 
+// returns random number within boundaries given (helper)
+int random_range(int r1, int r2){
+    // check incase of user error
+    // my own lol
+    if(r1 > r2){
+        int temp = r1;
+        r1 = r2;
+        r2 = temp;
+    }
+    return rand() % (r2 - r1 + 1) + r1;
+}
+
+
 // main
 int main(int argc, char *argv[]){
     int i;

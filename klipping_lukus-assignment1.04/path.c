@@ -1,5 +1,7 @@
 #include<stdio.h>
 #include "path.h"
+#include "dungeonGeneration.h"
+
 
 // could not find a better way for cmp pointer
 static dungeon_t *dun_cmp = NULL;

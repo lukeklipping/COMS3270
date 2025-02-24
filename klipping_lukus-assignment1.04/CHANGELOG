@@ -13,4 +13,6 @@
 2/24/2025 12:01: made new files
                 readWriteDungeon.c and readWriteDungeon.h to make files smaller an organize.
 2/24/2025 12:05: Above working correctly
+2/24/2025 1:00: new character.h and character.c
+2/24/2025 2:30: monster.c
 

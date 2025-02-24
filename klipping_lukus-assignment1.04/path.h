@@ -1,7 +1,7 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include "dungeonGeneration.h"
+typedef struct dungeon dungeon_t;
 
 typedef struct path{
     heap_node_t *heapNode;

@@ -2,7 +2,8 @@
 #define DUNGEONGENERATION_H
 #include<stdint.h>
 
-#include "heap.h"
+#include "heap.h" 
+#include "character.h"
 
 
 #define DUNGEON_VERSIONX 0
@@ -37,10 +38,6 @@ typedef enum{
     action_rand
 } action_t;
 
-typedef struct{
-
-} character_t;
-
 typedef struct {
     uint8_t y;
     uint8_t x;
@@ -55,8 +52,8 @@ typedef struct dungeon{
     int PC_T[DUNGEON_Y][DUNGEON_X];
     character_t *character[DUNGEON_Y][DUNGEON_X];
     pair_t PC;
-    //pair_t *stairs;
-}dungeon_t;
+    int num_monsters;
+} dungeon_t;
 
 
 void dungeon_init(dungeon_t *d);
@@ -74,6 +71,8 @@ int read_stairs(dungeon_t *d, FILE *f);
 int load_dungeon(dungeon_t *d, char *f);
 int save_dungeon(dungeon_t *d, char *f);
 int save_stairs(dungeon_t *d, FILE *f);
+int random_range(int, int);
+
 
 
 #endif

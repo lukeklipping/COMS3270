@@ -1,5 +1,3 @@
-
-
 all: dungeonGeneration
 	
 dungeonGeneration: heap.o dungeonGeneration.o path.o readWriteDungeon.o
