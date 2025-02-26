@@ -38,7 +38,6 @@
 #define MONSTER_MAX_SPEED 5
 #define MONSTER_MIN_SPEED 20
 
-typedef struct pair_t pair_t;
 typedef struct dungeon dungeon_t;
 typedef struct character character_t;
 

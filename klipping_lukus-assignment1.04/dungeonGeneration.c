@@ -119,8 +119,9 @@ int generate_PC(dungeon_t *d)
         py = d->rooms->y + rand() % d->rooms[0].height;
     } while (d->map[py][px] != ROOM || d->map[py][px] == '>' || d->map[py][px] == '<');
 
-    d->PC.x = px;
-    d->PC.y = py;
+    d->PC.position.x = px;
+    d->PC.position.y = py;
+
     d->map[py][px] = PLAYER;
     return 0;
 }
@@ -234,7 +235,7 @@ int delete_dungeon(dungeon_t *d)
 }
 
 // returns random number within boundaries given (helper)
-int random_range(int r1, int r2)
+/*int random_range(int r1, int r2)
 {
     // check incase of user error
     // my own lol
@@ -245,7 +246,7 @@ int random_range(int r1, int r2)
         r2 = temp;
     }
     return rand() % (r2 - r1 + 1) + r1;
-}
+}*/
 
 // main
 int main(int argc, char *argv[])

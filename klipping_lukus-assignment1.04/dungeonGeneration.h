@@ -26,6 +26,26 @@
 #define MAX_ROOMS 8
 #define MIN_ROOMS 6
 
+#define RANDOM_RANGE(r1, r2) ({       \
+    typeof(r1) _r1 = (r1);            \
+    typeof(r2) _r2 = (r1);            \
+    int temp = _r1;                   \
+    if (_r1 > _r2)                    \
+    {                                 \
+        _r1 = _r2;                    \
+        _r2 = temp;                   \
+    }                                 \
+    (rand() % (_r2 - _r1 + 1) + _r1); \
+})
+
+#define cellHardness(y, x) d->hardness[y][x]
+
+typedef struct pc
+{
+    pair_t position;
+
+} pc_t;
+
 typedef struct Room
 {
     int x, y, height, width;
@@ -55,7 +75,7 @@ typedef struct dungeon
     int PC_N[DUNGEON_Y][DUNGEON_X];
     int PC_T[DUNGEON_Y][DUNGEON_X];
     character_t *character[DUNGEON_Y][DUNGEON_X];
-    pair_t PC;
+    pc_t PC;
     int num_monsters;
     int num_sequence;
 } dungeon_t;
