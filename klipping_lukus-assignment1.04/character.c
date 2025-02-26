@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "character.h"
 #include "dungeonGeneration.h"
 #include "heap.h"

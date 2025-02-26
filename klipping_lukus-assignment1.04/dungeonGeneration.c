@@ -1,10 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 
-#include "dungeonGeneration.h"
 #include "path.h"
+#include "dungeonGeneration.h"
 #include "readWriteDungeon.h"
 
 // char dungeon[DUNGEON_Y][DUNGEON_X];

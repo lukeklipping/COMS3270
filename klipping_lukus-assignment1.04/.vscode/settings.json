@@ -5,6 +5,7 @@
     "stdio.h": "c",
     "dungeongeneration.h": "c",
     "monster.h": "c",
-    "character.h": "c"
+    "character.h": "c",
+    "heap.h": "c"
   }
 }

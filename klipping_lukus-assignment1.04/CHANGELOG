@@ -20,3 +20,6 @@
 2/24/2025 7:40: found can see algorithm online
                 Breshamns line algo found for can see function
 2/24/2025 8:30: can_see believed to be finished
+2/24/2025 8:40: All erattic movements done
+2/24/2025 9:17: Finally found massive bug with type def
+                was declaring structs with wrong names

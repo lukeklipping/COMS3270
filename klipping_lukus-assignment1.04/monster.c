@@ -1,10 +1,10 @@
-#include <stdlib.h>
-
-#include "monster.h"
-#include "dungeonGeneration.h"
-#include "character.h"
-#include "heap.h"
 #include "path.h"
+#include "heap.h"
+#include "dungeonGeneration.h"
+#include "monster.h"
+#include "character.h"
+
+#include <stdlib.h>
 
 int32_t monster_comp(const void *c1, const void *c2)
 {
@@ -44,17 +44,17 @@ void monsters_generate(dungeon_t *d, heap_t *hp)
         monster->alive = 1;
         monster->sequence = ++d->num_sequence;
         monster->pc = NULL;
-
         // may be a problem
-        monster->mon_character = malloc(sizeof(monster->mon_character));
+        monster->mon_character = malloc(sizeof(*monster->mon_character));
 
         monster->mon_character->characteristic = rand() & 0x0000000f;
+        monster->mon_character->seen_PC = 0;
         monster->symbol = symbol[RANDOM_RANGE(0, 9)];
 
         heap_insert(hp, monster);
     }
 }
-
+/*
 void monsters_next(dungeon_t *d, character_t *c, pair_t new_pos)
 {
     new_pos.y = c->position.y;
@@ -80,6 +80,7 @@ void monsters_next(dungeon_t *d, character_t *c, pair_t new_pos)
         }
     }
 }
+*/
 
 // uses djikstra again
 static void monster_next_tun(dungeon_t *d, character_t *c, pair_t next)
@@ -102,7 +103,7 @@ void monster_next_random(dungeon_t *d, character_t *c, pair_t next)
     next.x = dir.x;
 }
 
-void monster_next_cansee(dungeon_t *d, character_t *c, pair_t next)
+void monster_next_LOS(dungeon_t *d, character_t *c, pair_t next)
 {
     pair_t dir;
 
@@ -119,22 +120,22 @@ void monster_next_cansee(dungeon_t *d, character_t *c, pair_t next)
         dir.x /= abs(dir.x);
     }
 
-    if (d->map[next.y + dir.y][next.x + dir.x] >= (ROOM || HALL))
+    if (d->map[next.y + dir.y][next.x + dir.x] >= ROOM || d->map[next.y + dir.y][next.x + dir.x] >= HALL)
     { // diaganal
         next.x += dir.x;
         next.y += dir.y;
     }
-    else if (d->map[next.y][next.x + dir.x] >= (ROOM || HALL))
+    else if (d->map[next.y][next.x + dir.x] >= ROOM || d->map[next.y][next.x + dir.x] >= HALL)
     { // hori
         next.x += dir.x;
     }
-    if (d->map[next.y + dir.y][next.x] >= (ROOM || HALL))
+    if (d->map[next.y + dir.y][next.x] >= ROOM || d->map[next.y + dir.y][next.x] >= HALL)
     { // verti
         next.y += dir.y;
     }
 }
 
-void monster_next_cansee_tunnel(dungeon_t *d, character_t *c, pair_t next)
+void monster_next_LOS_tunnel(dungeon_t *d, character_t *c, pair_t next)
 {
     pair_t dir;
 
@@ -177,14 +178,48 @@ void monster_next_cansee_tunnel(dungeon_t *d, character_t *c, pair_t next)
 monster_next_00(dungeon_t *d, character_t *c, pair_t next)
 {
     /* not erratic : not tunneling : not telepathic : not smart */
+
+    // can only meaningly if sees pc
+    if (character_see(d, c, &d->PC))
+    {
+        c->mon_character->last_known_PC_pos.y = d->PC.position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC.position.x;
+        monster_next_LOS(d, c, next);
+    }
+    else
+    {
+        monster_next_random(d, c, next);
+    }
 }
 static void monster_next_01(dungeon_t *d, character_t *c, pair_t next)
 {
     /* not erratic : not tunneling : not telepathic : smart */
+    if (character_see(d, c, &d->PC))
+    {
+        c->mon_character->last_known_PC_pos.y = d->PC.position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC.position.x;
+        c->mon_character->seen_PC = 1;
+        monster_next_LOS(d, c, next);
+    }
+    // continue to go to last known point
+    else if (c->mon_character->seen_PC)
+    {
+        monster_next_LOS(d, c, next);
+    }
+
+    // reaches last known point, forgets if seen if pc not there
+    if ((next.x == c->mon_character->last_known_PC_pos.x) &&
+        (next.y == c->mon_character->last_known_PC_pos.y))
+    {
+        c->mon_character->seen_PC = 0;
+    }
 }
 static void monster_next_02(dungeon_t *d, character_t *c, pair_t next)
 {
     /* not erratic : not tunneling : telepathic : not smart */
+    c->mon_character->last_known_PC_pos.y = d->PC.position.y;
+    c->mon_character->last_known_PC_pos.x = d->PC.position.x;
+    monster_next_LOS(d, c, next);
 }
 static void monster_next_03(dungeon_t *d, character_t *c, pair_t next)
 {
@@ -193,6 +228,16 @@ static void monster_next_03(dungeon_t *d, character_t *c, pair_t next)
 static void monster_next_04(dungeon_t *d, character_t *c, pair_t next)
 {
     /* not erratic : tunneling : not telepathic : not smart */
+    if (character_see(d, c, &d->PC))
+    {
+        c->mon_character->last_known_PC_pos.y = d->PC.position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC.position.x;
+        monster_next_LOS(d, c, next);
+    }
+    else
+    {
+        monster_next_random(d, c, next);
+    }
 }
 static void monster_next_05(dungeon_t *d, character_t *c, pair_t next)
 {
@@ -215,6 +260,7 @@ static void monster_next_08(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_00(d, c, next);
     }
 }
 static void monster_next_09(dungeon_t *d, character_t *c, pair_t next)
@@ -226,6 +272,7 @@ static void monster_next_09(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_01(d, c, next);
     }
 }
 static void monster_next_0a(dungeon_t *d, character_t *c, pair_t next)
@@ -237,9 +284,10 @@ static void monster_next_0a(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_02(d, c, next);
     }
 }
-static void monster_next_ob(dungeon_t *d, character_t *c, pair_t next)
+static void monster_next_0b(dungeon_t *d, character_t *c, pair_t next)
 {
     /* erratic : not tunneling : telepathic : smart */
     if (rand() % 2)
@@ -248,6 +296,7 @@ static void monster_next_ob(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_03(d, c, next);
     }
 }
 static void monster_next_0c(dungeon_t *d, character_t *c, pair_t next)
@@ -259,6 +308,7 @@ static void monster_next_0c(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_04(d, c, next);
     }
 }
 static void monster_next_0d(dungeon_t *d, character_t *c, pair_t next)
@@ -270,6 +320,7 @@ static void monster_next_0d(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_05(d, c, next);
     }
 }
 static void monster_next_0e(dungeon_t *d, character_t *c, pair_t next)
@@ -281,6 +332,7 @@ static void monster_next_0e(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_06(d, c, next);
     }
 }
 static void monster_next_0f(dungeon_t *d, character_t *c, pair_t next)
@@ -292,6 +344,7 @@ static void monster_next_0f(dungeon_t *d, character_t *c, pair_t next)
     }
     else
     {
+        monster_next_07(d, c, next);
     }
 }
 
@@ -318,67 +371,13 @@ void (*npc_move_func[])(dungeon_t *d, character_t *c, pair_t next) = {
     monster_next_0f,
 };
 
-void npc_next_pos(dungeon_t *d, character_t *c, pair_t next)
+void monster_next_pos(dungeon_t *d, character_t *c, pair_t next)
 {
-    next[dim_y] = c->position[dim_y];
-    next[dim_x] = c->position[dim_x];
+    next.y = c->position.y;
+    next.x = c->position.x;
 
-    npc_move_func[c->npc->characteristics & 0x0000000f](d, c, next);
+    npc_move_func[c->mon_character->characteristic & 0x0000000f](d, c, next);
 }
-/*
-
-static void move_random(dungeon_t *d, character_t *c, pair_t *new_pos)
-{
-
-    do
-    {
-        int dy = c->position.x + RANDOM_RANGE(-1, 1);
-        int dx = c->position.y + RANDOM_RANGE(-1, 1);
-    } while (i)
-}
-
-void move_toward_pc(dungeon_t *d, character_t *c, pair_t *new_pos)
-{
-    int dy = d->PC.y - c->position.y;
-    int dx = d->PC.x - c->position.x;
-
-    new_pos->y += (dy ? (dy / abs(dy)) : 0);
-    new_pos->x += (dx ? (dx / abs(dx)) : 0);
-}
-void move_toward_known_pc(dungeon_t *d, character_t *c, pair_t new_pos)
-{
-    int dy = d->PC.y - c->position.y;
-    int dx = d->PC.x - c->position.x;
-
-    if (dy)
-    {
-        dy /= abs(dy);
-    }
-    if (dx)
-    {
-        dx /= abs(dx);
-    }
-
-    if (d->map[new_pos.y + dy][new_pos.x + dx] >= ROOM)
-    {
-        new_pos.y += dy;
-        new_pos.x += dx;
-    }
-
-    new_pos->y += (dy ? (dy / abs(dy)) : 0);
-    new_pos->x += (dx ? (dx / abs(dx)) : 0);
-}
-void move_tunneling(dungeon_t *d, character_t *c, pair_t *new_pos)
-{
-    // Example logic: Move in the best direction, even if it means breaking walls
-    int dy = d->pc.position.y - c->position.y;
-    int dx = d->pc.position.x - c->position.x;
-
-    if (dy)
-        new_pos->y += (dy / abs(dy));
-    if (dx)
-        new_pos->x += (dx / abs(dx));
-}*/
 
 int monsters_number(dungeon_t *d)
 {

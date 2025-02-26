@@ -11,8 +11,11 @@ void eventSim_update(dungeon_t *d)
     heap_insert(&heap, &d->PC);
     monsters_generate(&d, &heap);
 
-    while (he)
+    int game = 1;
+
+    while (game)
     {
         tmp = heap_remove_min(&heap);
+        monster_next_pos(d, tmp, //)
     }
 }

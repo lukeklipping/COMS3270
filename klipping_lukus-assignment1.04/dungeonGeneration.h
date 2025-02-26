@@ -1,10 +1,10 @@
 #ifndef DUNGEONGENERATION_H
 #define DUNGEONGENERATION_H
+
 #include <stdint.h>
 #include <stdio.h>
 
 #include "heap.h"
-#include "character.h"
 
 #define DUNGEON_VERSIONX 0
 #define DUNGEON_SAVE_FILE "dungeon"
@@ -28,7 +28,7 @@
 
 #define RANDOM_RANGE(r1, r2) ({       \
     typeof(r1) _r1 = (r1);            \
-    typeof(r2) _r2 = (r1);            \
+    typeof(r2) _r2 = (r2);            \
     int temp = _r1;                   \
     if (_r1 > _r2)                    \
     {                                 \
@@ -40,7 +40,10 @@
 
 #define cellHardness(y, x) d->hardness[y][x]
 
-typedef struct pc
+struct character_t;
+typedef struct character_t character_t;
+
+typedef struct pc_t
 {
     pair_t position;
 
@@ -60,13 +63,13 @@ typedef enum
     action_rand
 } action_t;
 
-typedef struct
+typedef struct pair_t
 {
     uint8_t y;
     uint8_t x;
 } pair_t;
 
-typedef struct dungeon
+typedef struct dungeon_t
 {
     char map[DUNGEON_Y][DUNGEON_X];
     int num_rooms;
@@ -95,6 +98,6 @@ int read_stairs(dungeon_t *d, FILE *f);
 int load_dungeon(dungeon_t *d, char *f);
 int save_dungeon(dungeon_t *d, char *f);
 int save_stairs(dungeon_t *d, FILE *f);
-int random_range(int, int);
+// int random_range(int, int);
 
 #endif

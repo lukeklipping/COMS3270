@@ -38,17 +38,21 @@
 #define MONSTER_MAX_SPEED 5
 #define MONSTER_MIN_SPEED 20
 
-typedef struct dungeon dungeon_t;
-typedef struct character character_t;
+struct dungeon_t;
+typedef struct dungeon_t dungeon_t;
+struct character_t;
+typedef struct character_t character_t;
 
-typedef struct
+typedef struct monster_t
 {
     int characteristic;
+    int seen_PC;
+    pair_t last_known_PC_pos;
 } monster_t;
 
 void monsters_generate(dungeon_t *d, heap_t *h);
 void monsters_delete(monster_t *m);
-void monsters_next(dungeon_t *d, character_t *c, pair_t new_pos);
+void monster_next_pos(dungeon_t *d, character_t *c, pair_t next);
 int monsters_number(dungeon_t *d);
 int32_t monster_comp(const void *c1, const void *c2);
 

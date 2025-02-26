@@ -1,9 +1,11 @@
 #ifndef PATH_H
 #define PATH_H
 
-typedef struct dungeon dungeon_t;
+struct dungeon_t;
+typedef struct dungeon_t dungeon_t;
 
-typedef struct path{
+typedef struct path
+{
     heap_node_t *heapNode;
     int xP;
     int yP;
@@ -14,6 +16,5 @@ void djikstra_tunnel(dungeon_t *d);
 void djikstra_non_tunnel(dungeon_t *d);
 void tunnel_map(dungeon_t *d);
 void non_tunnel_map(dungeon_t *d);
-
 
 #endif

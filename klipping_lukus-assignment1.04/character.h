@@ -1,15 +1,18 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include "dungeonGeneration.h"
-
 // how far monster can see?
 #define SIGHT_DISTANCE 15
+#include "dungeonGeneration.h";
 
-typedef struct dungeon dungeon_t;
-typedef struct monster monster_t;
+/*struct dungeon_t;
+typedef struct dungeon_t dungeon_t;*/
+struct monster_t;
+typedef struct monster_t monster_t;
+struct pc_t;
+typedef struct pc_t pc_t;
 
-typedef struct
+typedef struct character_t
 {
     char symbol;
     pair_t position;
