@@ -3,7 +3,7 @@
 
 // how far monster can see?
 #define SIGHT_DISTANCE 15
-#include "dungeonGeneration.h";
+#include "dungeonGeneration.h"
 
 /*struct dungeon_t;
 typedef struct dungeon_t dungeon_t;*/
@@ -23,7 +23,7 @@ typedef struct character_t
     pc_t *pc;
 } character_t;
 
-int character_compare(void *ch1, void *ch2);
+int character_compare(const void *ch1, const void *ch2);
 int character_see(dungeon_t *d, character_t *observer, character_t *target);
 void character_delete(void *c);
 

@@ -4,6 +4,7 @@
 
 #include "path.h"
 #include "dungeonGeneration.h"
+#include "character.h"
 #include "readWriteDungeon.h"
 
 // char dungeon[DUNGEON_Y][DUNGEON_X];
@@ -118,10 +119,25 @@ int generate_PC(dungeon_t *d)
         py = d->rooms->y + rand() % d->rooms[0].height;
     } while (d->map[py][px] != ROOM || d->map[py][px] == '>' || d->map[py][px] == '<');
 
-    d->PC.position.x = px;
-    d->PC.position.y = py;
+    d->PC = malloc(sizeof(character_t));
+    d->PC->pc = calloc(1, sizeof(*d->PC->pc));
 
-    d->map[py][px] = PLAYER;
+    d->PC->pc->position.x = px;
+    d->PC->pc->position.y = py;
+    d->PC->alive = 1;
+    d->PC->speed = PC_SPEED;
+    d->PC->sequence = 0;
+    d->PC->mon_character = NULL;
+
+    d->character[py][px] = d->PC;
+
+    d->PC->symbol = '@';
+
+    // d->map[py][px] = PLAYER;
+
+    djikstra_non_tunnel(d);
+    djikstra_tunnel(d);
+
     return 0;
 }
 
@@ -212,23 +228,8 @@ void generate_stairs(dungeon_t *d)
     // d->num_down_stairs++;
 }
 
-// generates dungeon for --rand
-void dungeon_generate(dungeon_t *d)
-{
-    generate_rooms_character(d);
-    generate_corridor(d);
-    generate_stairs(d);
-    generate_PC(d);
-}
-
-// usage flags for command line
-void usage(const char *s)
-{
-    fprintf(stderr, "%s [--load|--save|--rand]", s);
-}
-
 // frees dungeon variables
-int delete_dungeon(dungeon_t *d)
+void delete_dungeon(dungeon_t *d)
 {
     free(d->rooms);
 }
@@ -246,7 +247,7 @@ int delete_dungeon(dungeon_t *d)
     }
     return rand() % (r2 - r1 + 1) + r1;
 }*/
-
+/*
 // main
 int main(int argc, char *argv[])
 {
@@ -340,12 +341,13 @@ int main(int argc, char *argv[])
 
     djikstra_tunnel(&dungeon);
     djikstra_non_tunnel(&dungeon);
-    printf("\nNon-Tunnel map\n");
-    non_tunnel_map(&dungeon);
-    printf("\nTunnel map\n");
+    // printf("\nNon-Tunnel map\n");
+    // non_tunnel_map(&dungeon);
+    // printf("\nTunnel map\n");
     tunnel_map(&dungeon);
 
     delete_dungeon(&dungeon);
 
     return 0;
 }
+*/

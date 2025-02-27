@@ -1,8 +1,12 @@
 #ifndef PATH_H
 #define PATH_H
 
+#include "heap.h"
+
 struct dungeon_t;
 typedef struct dungeon_t dungeon_t;
+struct pc_t;
+typedef struct pc_t pc_t;
 
 typedef struct path
 {

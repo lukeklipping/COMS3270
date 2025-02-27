@@ -3,10 +3,25 @@
 #include "character.h"
 #include "dungeonGeneration.h"
 #include "heap.h"
+#include "monster.h"
 
 void character_delete(void *c)
 {
-    free(c);
+    character_t *del;
+    if (c)
+    {
+        del = c;
+        if (del->mon_character)
+        {
+            monsters_delete(del->mon_character);
+        }
+        free(del);
+    }
+}
+
+int character_compare(const void *ch1, const void *ch2)
+{
+    return ((const character_t *)ch1)->sequence - ((const character_t *)ch2)->sequence;
 }
 
 /*

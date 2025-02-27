@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "heap.h"
-
 #define DUNGEON_VERSIONX 0
 #define DUNGEON_SAVE_FILE "dungeon"
 #define SAVE_DIR ".rlg327"
@@ -26,15 +24,11 @@
 #define MAX_ROOMS 8
 #define MIN_ROOMS 6
 
+#define PC_SPEED 10
+
 #define RANDOM_RANGE(r1, r2) ({       \
     typeof(r1) _r1 = (r1);            \
     typeof(r2) _r2 = (r2);            \
-    int temp = _r1;                   \
-    if (_r1 > _r2)                    \
-    {                                 \
-        _r1 = _r2;                    \
-        _r2 = temp;                   \
-    }                                 \
     (rand() % (_r2 - _r1 + 1) + _r1); \
 })
 
@@ -42,12 +36,6 @@
 
 struct character_t;
 typedef struct character_t character_t;
-
-typedef struct pc_t
-{
-    pair_t position;
-
-} pc_t;
 
 typedef struct Room
 {
@@ -69,6 +57,12 @@ typedef struct pair_t
     uint8_t x;
 } pair_t;
 
+typedef struct pc_t
+{
+    pair_t position;
+
+} pc_t;
+
 typedef struct dungeon_t
 {
     char map[DUNGEON_Y][DUNGEON_X];
@@ -78,7 +72,7 @@ typedef struct dungeon_t
     int PC_N[DUNGEON_Y][DUNGEON_X];
     int PC_T[DUNGEON_Y][DUNGEON_X];
     character_t *character[DUNGEON_Y][DUNGEON_X];
-    pc_t PC;
+    character_t *PC;
     int num_monsters;
     int num_sequence;
 } dungeon_t;
@@ -98,6 +92,6 @@ int read_stairs(dungeon_t *d, FILE *f);
 int load_dungeon(dungeon_t *d, char *f);
 int save_dungeon(dungeon_t *d, char *f);
 int save_stairs(dungeon_t *d, FILE *f);
-// int random_range(int, int);
+void delete_dungeon(dungeon_t *d);
 
 #endif

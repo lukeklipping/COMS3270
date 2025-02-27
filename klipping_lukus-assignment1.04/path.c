@@ -1,6 +1,10 @@
-#include <stdio.h>
+
 #include "path.h"
+#include "heap.h"
 #include "dungeonGeneration.h"
+#include "character.h"
+
+#include <stdio.h>
 
 // could not find a better way for cmp pointer
 static dungeon_t *dun_cmp = NULL;
@@ -52,7 +56,7 @@ void djikstra_non_tunnel(dungeon_t *d)
             d->PC_N[i][j] = 255;
         }
     }
-    d->PC_N[d->PC.y][d->PC.x] = 0;
+    d->PC_N[d->PC->pc->position.y][d->PC->pc->position.x] = 0;
 
     heap_init(&heap, compare_distance, NULL);
 
@@ -185,7 +189,7 @@ void djikstra_tunnel(dungeon_t *d)
         }
     }
     // sets pc pos
-    d->PC_T[d->PC.y][d->PC.x] = 0;
+    d->PC_T[d->PC->pc->position.y][d->PC->pc->position.x] = 0;
 
     heap_init(&heap, compare_tunnel_distance, NULL);
 
@@ -304,7 +308,7 @@ void tunnel_map(dungeon_t *d)
     {
         for (j = 0; j < DUNGEON_X; j++)
         {
-            if (i == d->PC.y && j == d->PC.x)
+            if (i == d->PC->pc->position.y && j == d->PC->pc->position.x)
             {
                 printf("%c", PLAYER);
             }
@@ -328,7 +332,7 @@ void non_tunnel_map(dungeon_t *d)
     {
         for (j = 0; j < DUNGEON_X; j++)
         {
-            if (i == d->PC.y && j == d->PC.x)
+            if (i == d->PC->pc->position.y && j == d->PC->pc->position.x)
             {
                 printf("%c", PLAYER);
             }

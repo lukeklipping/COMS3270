@@ -15,11 +15,30 @@
 2/24/2025 12:05: Above working correctly
 2/24/2025 1:00: new character.h and character.c
 2/24/2025 2:30: monster.c
-2/24/2025 6:00: Made new static methods
+2/25/2025 6:00: Made new static methods
                 static methods for each 4 bit monster move
-2/24/2025 7:40: found can see algorithm online
+2/25/2025 7:40: found can see algorithm online
                 Breshamns line algo found for can see function
-2/24/2025 8:30: can_see believed to be finished
-2/24/2025 8:40: All erattic movements done
-2/24/2025 9:17: Finally found massive bug with type def
+2/25/2025 8:30: can_see believed to be finished
+2/25/2025 8:40: All erattic movements done
+2/25/2025 9:17: Finally found massive bug with type def
                 was declaring structs with wrong names
+2/26/2025 12:20: Fixed bugs
+                fixed bugs, program can run without new methods
+2/26/2025 1:30: All monster methods believed to be done
+2/26/2025 1:35: Putting into makefile   
+                character.c and character.h
+2/26/2025 1:37: Putting into makefile   
+                character.c and character.h both compile
+2/26/2025 1:37: Putting into makefile   
+                monster.c and monster.h 
+2/26/2025 1:47: Putting into makefile   
+                monster.c and monster.h minor bugs, fixing, 
+2/26/2025 1:51: Putting into makefile   
+                monster.c and monster.h compile
+2/26/2025 3:00: Initial check before heap working   
+                everything compiles correctly
+2/26/2025 3:30: eventSim finished
+2/26/2025 3:47: new game file
+                moving main to rlg.c
+2/26/2025 4:00: testing

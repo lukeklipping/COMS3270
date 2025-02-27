@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "character.h"
 #include "readWriteDungeon.h"
 
 // saves stairs
@@ -244,8 +245,8 @@ int load_dungeon(dungeon_t *d, char *file)
     fread(&save_to32, sizeof(save_to32), 1, f);
     // save_to32 = be32toh(save_to32);
 
-    fread(&d->PC.x, 1, 1, f);
-    fread(&d->PC.y, 1, 1, f);
+    fread(&d->PC->pc->position.x, 1, 1, f);
+    fread(&d->PC->pc->position.y, 1, 1, f);
 
     read_dungeon_map(d, f);
 
@@ -355,8 +356,8 @@ int save_dungeon(dungeon_t *d, char *file)
     fwrite(&write_to32, sizeof(write_to32), 1, f);
 
     // A pair of unsigned 8-bit integers giving the x and y position of the PC
-    uint8_t x = d->PC.x;
-    uint8_t y = d->PC.y;
+    uint8_t x = d->PC->pc->position.x;
+    uint8_t y = d->PC->pc->position.y;
     fwrite(&x, 1, 1, f);
     fwrite(&y, 1, 1, f);
 
