@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "heap.h"
+
 #define DUNGEON_VERSIONX 0
 #define DUNGEON_SAVE_FILE "dungeon"
 #define SAVE_DIR ".rlg327"
@@ -59,13 +61,13 @@ typedef struct pair_t
 
 typedef struct pc_t
 {
-    pair_t position;
-
+    // future attacks ??
 } pc_t;
 
 typedef struct dungeon_t
 {
     char map[DUNGEON_Y][DUNGEON_X];
+    char terrain[DUNGEON_Y][DUNGEON_X];
     int num_rooms;
     Room *rooms;
     uint8_t hardness[DUNGEON_Y][DUNGEON_X];
@@ -73,9 +75,11 @@ typedef struct dungeon_t
     int PC_T[DUNGEON_Y][DUNGEON_X];
     character_t *character[DUNGEON_Y][DUNGEON_X];
     character_t *PC;
+    heap_t heap;
     int num_monsters;
-    int num_sequence;
 } dungeon_t;
+
+void dungeon_empty_init(dungeon_t *d);
 
 void dungeon_init(dungeon_t *d);
 void dungeon_print(dungeon_t *d);
@@ -93,5 +97,9 @@ int load_dungeon(dungeon_t *d, char *f);
 int save_dungeon(dungeon_t *d, char *f);
 int save_stairs(dungeon_t *d, FILE *f);
 void delete_dungeon(dungeon_t *d);
+
+void delete_characterArray(dungeon_t *d);
+
+void copy_to_terrain(dungeon_t *d);
 
 #endif

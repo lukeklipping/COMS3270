@@ -11,6 +11,11 @@
 //  fills dungeon with rock and initializes hardness
 void dungeon_init(dungeon_t *d)
 {
+    dungeon_empty_init(d);
+}
+
+void dungeon_empty_init(dungeon_t *d)
+{
 
     int x, y;
     for (y = 0; y < DUNGEON_Y; y++)
@@ -27,6 +32,7 @@ void dungeon_init(dungeon_t *d)
                 d->map[y][x] = ROCK;
                 d->hardness[y][x] = 1 + rand() % 254;
             }
+            d->character[y][x] = NULL;
         }
     }
 }
@@ -38,6 +44,7 @@ void dungeon_print(dungeon_t *d)
     {
         for (x = 0; x < DUNGEON_X; x++)
         {
+
             printf("%c", d->map[y][x]);
         }
         printf("\n");
@@ -119,24 +126,24 @@ int generate_PC(dungeon_t *d)
         py = d->rooms->y + rand() % d->rooms[0].height;
     } while (d->map[py][px] != ROOM || d->map[py][px] == '>' || d->map[py][px] == '<');
 
-    d->PC = malloc(sizeof(character_t));
-    d->PC->pc = calloc(1, sizeof(*d->PC->pc));
+    d->PC = malloc(sizeof(*d->PC));
+    memset(d->PC, 0, sizeof(*d->PC));
 
-    d->PC->pc->position.x = px;
-    d->PC->pc->position.y = py;
+    d->PC->position.x = px;
+    d->PC->position.y = py;
     d->PC->alive = 1;
     d->PC->speed = PC_SPEED;
     d->PC->sequence = 0;
     d->PC->mon_character = NULL;
+    d->PC->symbol = PLAYER;
+    d->PC->pc = calloc(1, sizeof(*d->PC->pc));
 
     d->character[py][px] = d->PC;
 
-    d->PC->symbol = '@';
+    d->map[py][px] = PLAYER;
+    // d->terrain[py][px] = PLAYER;
 
-    // d->map[py][px] = PLAYER;
-
-    djikstra_non_tunnel(d);
-    djikstra_tunnel(d);
+    heap_insert(&d->heap, d->PC);
 
     return 0;
 }
@@ -231,7 +238,42 @@ void generate_stairs(dungeon_t *d)
 // frees dungeon variables
 void delete_dungeon(dungeon_t *d)
 {
+    // free(d->character);
     free(d->rooms);
+}
+
+void delete_characterArray(dungeon_t *d)
+{
+    for (int i = 0; i < DUNGEON_Y; i++)
+    {
+        for (int j = 0; j < DUNGEON_X; j++)
+        {
+            if (d->character[i][j])
+            {
+                if (d->character[i][j]->mon_character)
+                {
+                    // pc in here
+                    free(d->character[i][j]->mon_character);
+                    d->character[i][j]->mon_character = NULL;
+                }
+                free(d->character[i][j]);
+                d->character[i][j] = NULL;
+            }
+        }
+    }
+}
+
+void copy_to_terrain(dungeon_t *d)
+{
+    int x, y;
+    for (y = 0; y < DUNGEON_Y; y++)
+    {
+        for (x = 0; x < DUNGEON_X; x++)
+        {
+
+            d->terrain[y][x] = d->map[y][x];
+        }
+    }
 }
 
 // returns random number within boundaries given (helper)

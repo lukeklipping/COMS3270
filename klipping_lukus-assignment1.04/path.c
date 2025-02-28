@@ -56,7 +56,7 @@ void djikstra_non_tunnel(dungeon_t *d)
             d->PC_N[i][j] = 255;
         }
     }
-    d->PC_N[d->PC->pc->position.y][d->PC->pc->position.x] = 0;
+    d->PC_N[d->PC->position.y][d->PC->position.x] = 0;
 
     heap_init(&heap, compare_distance, NULL);
 
@@ -189,7 +189,7 @@ void djikstra_tunnel(dungeon_t *d)
         }
     }
     // sets pc pos
-    d->PC_T[d->PC->pc->position.y][d->PC->pc->position.x] = 0;
+    d->PC_T[d->PC->position.y][d->PC->position.x] = 0;
 
     heap_init(&heap, compare_tunnel_distance, NULL);
 
@@ -308,7 +308,7 @@ void tunnel_map(dungeon_t *d)
     {
         for (j = 0; j < DUNGEON_X; j++)
         {
-            if (i == d->PC->pc->position.y && j == d->PC->pc->position.x)
+            if (i == d->PC->position.y && j == d->PC->position.x)
             {
                 printf("%c", PLAYER);
             }
@@ -332,7 +332,7 @@ void non_tunnel_map(dungeon_t *d)
     {
         for (j = 0; j < DUNGEON_X; j++)
         {
-            if (i == d->PC->pc->position.y && j == d->PC->pc->position.x)
+            if (i == d->PC->position.y && j == d->PC->position.x)
             {
                 printf("%c", PLAYER);
             }

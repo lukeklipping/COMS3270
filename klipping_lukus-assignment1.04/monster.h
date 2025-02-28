@@ -50,10 +50,10 @@ typedef struct monster_t
     pair_t last_known_PC_pos;
 } monster_t;
 
-void monsters_generate(dungeon_t *d, heap_t *h);
+void monsters_generate(dungeon_t *d);
 void monster_next_position(dungeon_t *d, character_t *c, pair_t *next);
 void monsters_delete(monster_t *m);
 int monsters_number(dungeon_t *d);
-int32_t monster_comp(const void *c1, const void *c2);
+// int32_t monster_comp(const void *c1, const void *c2);
 
 #endif

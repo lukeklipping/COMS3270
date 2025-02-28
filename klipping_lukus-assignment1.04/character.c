@@ -19,7 +19,7 @@ void character_delete(void *c)
     }
 }
 
-int character_compare(const void *ch1, const void *ch2)
+int32_t character_compare(const void *ch1, const void *ch2)
 {
     return ((const character_t *)ch1)->sequence - ((const character_t *)ch2)->sequence;
 }
@@ -101,7 +101,12 @@ int character_see(dungeon_t *d, character_t *observer, character_t *target)
         D = (2 * diff.x) - diff.y;
         for (i = 0; i <= diff.y; i++)
         {
-            if (d->map[observeP.y][observeP.x] < ROOM && i && i != diff.y)
+            if (observeP.x < 0 || observeP.x >= DUNGEON_X ||
+                observeP.y < 0 || observeP.y >= DUNGEON_Y)
+            {
+                return 0; // Can't see outside dungeon
+            }
+            if (d->map[observeP.y][observeP.x] == ROCK && i && i != diff.y)
             {
                 return 0;
             }

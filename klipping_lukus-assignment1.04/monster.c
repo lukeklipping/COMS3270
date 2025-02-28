@@ -7,14 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-int32_t monster_comp(const void *c1, const void *c2)
+// because pc sequence is 0
+static int static_sequence = 1;
+
+/*int32_t monster_comp(const void *c1, const void *c2)
 {
     character_t *monster1 = *(character_t **)c1;
     character_t *monster2 = *(character_t **)c2;
 
     // Compare based on sequence number (or other criteria)
     return monster1->sequence - monster2->sequence;
-}
+}*/
 void monsters_delete(monster_t *m)
 {
     if (m)
@@ -23,19 +26,23 @@ void monsters_delete(monster_t *m)
     }
 }
 
-void monsters_generate(dungeon_t *d, heap_t *hp)
+void monsters_generate(dungeon_t *d)
 {
     int i;
     character_t *monster;
     int room;
     pair_t pos;
-    const static char symbol[] = "0123456789abcdef";
+    const static char symbol[] = "0123456789ABCDEF";
 
     d->num_monsters = 10;
     for (i = 0; i < d->num_monsters; i++)
     {
         monster = malloc(sizeof(*monster));
-        // memset(monster, 0, sizeof(*monster);
+        if (!monster)
+        {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
         memset(monster, 0, sizeof(*monster));
 
         // find location for pos
@@ -52,50 +59,24 @@ void monsters_generate(dungeon_t *d, heap_t *hp)
 
         monster->speed = RANDOM_RANGE(MONSTER_MAX_SPEED, MONSTER_MIN_SPEED);
         monster->alive = 1;
-        monster->sequence = ++d->num_sequence;
-        monster->pc = NULL;
+        monster->sequence = ++static_sequence;
+        // monster->pc = NULL;
+
         monster->mon_character = malloc(sizeof(*monster->mon_character));
 
         monster->mon_character->characteristic = rand() & 0x0000000f;
         monster->symbol = symbol[monster->mon_character->characteristic];
         monster->mon_character->seen_PC = 0;
+        monster->mon_character->last_known_PC_pos.x = -1;
+        monster->mon_character->last_known_PC_pos.y = -1;
 
-        //
-        printf("Monster: %c at (%d, %d) speed: %d char: %d\n",
+        d->character[pos.y][pos.x] = monster;
+
+        /*
+        printf("Monster: %c at (%d, %d) speed: %d char: %d\n\n",
                monster->symbol, pos.x, pos.y, monster->speed, monster->mon_character->characteristic);
-        //
-        heap_insert(hp, monster);
-    }
-}
-// uses djikstra again
-void monster_next_rand_tunnel(dungeon_t *d, character_t *c, pair_t *next)
-{
-    pair_t dir;
-    do
-    {
-        dir.y = c->position.y + RANDOM_RANGE(-1, 1);
-        dir.x = c->position.x + RANDOM_RANGE(-1, 1);
-    } while (d->map[dir.y][dir.x] == IMMUTABLE_WALL);
-
-    // tunneller digs at wall by -85 each turn
-    if (cellHardness(dir.y, dir.x) <= 85)
-    {
-        // if (cellHardness(dir.y, dir.x))
-        //{
-        cellHardness(dir.y, dir.x) = 0;
-        d->map[dir.y][dir.x] = HALL;
-        //}
-        // update maps
-        djikstra_tunnel(d);
-        djikstra_non_tunnel(d);
-
-        // move
-        next->x = dir.x;
-        next->y = dir.y;
-    }
-    else
-    {
-        cellHardness(dir.y, dir.x) -= 85;
+        */
+        heap_insert(&d->heap, monster);
     }
 }
 
@@ -106,6 +87,13 @@ void monster_next_random(dungeon_t *d, character_t *c, pair_t *next)
     {
         dir.y = c->position.y + RANDOM_RANGE(-1, 1);
         dir.x = c->position.x + RANDOM_RANGE(-1, 1);
+
+        if (dir.y < 1 || dir.y >= DUNGEON_X - 1 ||
+            dir.x < 1 || dir.x >= DUNGEON_Y - 1)
+        {
+            continue;
+        }
+
     } while (d->map[dir.y][dir.x] != ROOM);
 
     next->y = dir.y;
@@ -116,8 +104,8 @@ void monster_next_LOS(dungeon_t *d, character_t *c, pair_t *next)
 {
     pair_t dir;
 
-    dir.y = d->PC->pc->position.y - c->position.y;
-    dir.x = d->PC->pc->position.x - c->position.x;
+    dir.y = d->PC->position.y - c->position.y;
+    dir.x = d->PC->position.x - c->position.x;
 
     // normalize direction
     if (dir.y)
@@ -128,19 +116,64 @@ void monster_next_LOS(dungeon_t *d, character_t *c, pair_t *next)
     {
         dir.x /= abs(dir.x);
     }
+    next->y = c->position.y;
+    next->x = c->position.x;
+    int new_y = next->y + dir.y;
+    int new_x = next->x + dir.x;
 
-    if (d->map[next->y + dir.y][next->x + dir.x] >= ROOM || d->map[next->y + dir.y][next->x + dir.x] >= HALL)
-    { // diaganal
-        next->x += dir.x;
+    if (new_y >= 0 && new_y < DUNGEON_Y && new_x >= 0 && new_x < DUNGEON_X &&
+        (d->map[new_y][new_x] == ROOM || d->map[new_y][new_x] == HALL))
+    {
+        // Move diagonally if possible
         next->y += dir.y;
-    }
-    else if (d->map[next->y][next->x + dir.x] >= ROOM || d->map[next->y][next->x + dir.x] >= HALL)
-    { // hori
         next->x += dir.x;
     }
-    if (d->map[next->y + dir.y][next->x] >= ROOM || d->map[next->y + dir.y][next->x] >= HALL)
-    { // verti
+    else if (new_x >= 0 && new_x < DUNGEON_X && (d->map[next->y][new_x] == ROOM || d->map[next->y][new_x] == HALL))
+    {
+        // Move horizontally
+        next->x += dir.x;
+    }
+    else if (new_y >= 0 && new_y < DUNGEON_Y && (d->map[new_y][next->x] == ROOM || d->map[new_y][next->x] == HALL))
+    {
+        // Move vertically
         next->y += dir.y;
+    }
+}
+// uses djikstra again
+void monster_next_rand_tunnel(dungeon_t *d, character_t *c, pair_t *next)
+{
+    pair_t dir;
+    do
+    {
+        dir.y = c->position.y + RANDOM_RANGE(-1, 1);
+        dir.x = c->position.x + RANDOM_RANGE(-1, 1);
+    } while (d->map[dir.y][dir.x] == IMMUTABLE_WALL || d->hardness[dir.y][dir.x] == 255);
+
+    // tunneller digs at wall by -85 each turn
+    if (cellHardness(dir.y, dir.x) <= 85 && cellHardness(dir.y, dir.x) != 255)
+    {
+        d->hardness[dir.y][dir.x] = 0;
+        if (d->map[c->position.y][c->position.x] != ROOM)
+        {
+            d->map[c->position.y][c->position.x] = HALL;
+            // update maps
+            djikstra_tunnel(d);
+            djikstra_non_tunnel(d);
+        }
+        else if (d->map[c->position.y][c->position.x] == ROOM)
+        {
+            d->map[c->position.y][c->position.x] = d->terrain[c->position.y][c->position.x];
+        }
+
+        // move
+        next->x = dir.x;
+        next->y = dir.y;
+    }
+    else
+    {
+        d->hardness[dir.y][dir.x] -= 85;
+        next->x = c->position.x; // stay
+        next->y = c->position.y;
     }
 }
 
@@ -148,8 +181,8 @@ void monster_next_LOS_tunnel(dungeon_t *d, character_t *c, pair_t *next)
 {
     pair_t dir;
 
-    dir.y = d->PC->pc->position.y - c->position.y;
-    dir.x = d->PC->pc->position.x - c->position.x;
+    dir.y = d->PC->position.y - c->position.y;
+    dir.x = d->PC->position.x - c->position.x;
 
     if (dir.y)
     {
@@ -164,30 +197,38 @@ void monster_next_LOS_tunnel(dungeon_t *d, character_t *c, pair_t *next)
     dir.y += next->y;
 
     // tunneller digs at wall by -85 each turn
-    if (cellHardness(dir.y, dir.x) <= 85)
+    if (cellHardness(dir.y, dir.x) <= 85 && cellHardness(dir.y, dir.x) != 255)
     {
-        // if (cellHardness(dir.y, dir.x))
-        //{
-        cellHardness(dir.y, dir.x) = 0;
-        d->map[dir.y][dir.x] = HALL;
-        //}
-        // update maps
-        djikstra_tunnel(d);
-        djikstra_non_tunnel(d);
+
+        d->hardness[dir.y][dir.x] = 0;
+        if (d->map[c->position.y][c->position.x] != ROOM)
+        {
+            d->map[c->position.y][c->position.x] = HALL;
+            // update maps
+            djikstra_tunnel(d);
+            djikstra_non_tunnel(d);
+        }
+        else if (d->map[c->position.y][c->position.x] == ROOM)
+        {
+            d->map[c->position.y][c->position.x] = d->terrain[c->position.y][c->position.x];
+        }
 
         next->x = dir.x;
         next->y = dir.y;
     }
     else
     {
-        cellHardness(dir.y, dir.x) -= 85;
+
+        d->hardness[dir.y][dir.x] -= 85;
+        next->x = c->position.x; // stay
+        next->y = c->position.y;
     }
 }
 
 void monster_next_telepathic(dungeon_t *d, character_t *c, pair_t *next)
 {
     int tunnelCost, nonTunnelCost;
-    pair_t bestPath; // ?
+    pair_t bestPath = {next->x, next->y}; // ?
     // tunnel
     if (c->mon_character->characteristic & MON_TUNNEL)
     {
@@ -241,16 +282,21 @@ void monster_next_telepathic(dungeon_t *d, character_t *c, pair_t *next)
         }
 
         // tunneller digs at wall by -85 each turn
-        if (cellHardness(bestPath.y, bestPath.x) <= 85)
+        if (cellHardness(bestPath.y, bestPath.x) <= 85 && cellHardness(bestPath.y, bestPath.x) != 255)
         {
-            // if (cellHardness(dir.y, dir.x))
-            //{
-            cellHardness(bestPath.y, bestPath.x) = 0;
-            d->map[bestPath.y][bestPath.x] = HALL;
-            //}
-            // update maps
-            djikstra_tunnel(d);
-            djikstra_non_tunnel(d);
+
+            d->hardness[bestPath.y][bestPath.x] = 0;
+            if (d->map[c->position.y][c->position.x] != ROOM)
+            {
+                d->map[c->position.y][c->position.x] = HALL;
+                // update maps
+                djikstra_tunnel(d);
+                djikstra_non_tunnel(d);
+            }
+            else if (d->map[c->position.y][c->position.x] == ROOM)
+            {
+                d->map[c->position.y][c->position.x] = d->terrain[c->position.y][c->position.x];
+            }
 
             // move
             next->x = bestPath.x;
@@ -259,7 +305,9 @@ void monster_next_telepathic(dungeon_t *d, character_t *c, pair_t *next)
         else
         {
             // dig
-            cellHardness(bestPath.y, bestPath.x) -= 85;
+            d->hardness[bestPath.y][bestPath.x] -= 85;
+            next->x = c->position.x; // stay
+            next->y = c->position.y;
         }
     }
     // non tunnel
@@ -324,8 +372,8 @@ static void monster_next_00(dungeon_t *d, character_t *c, pair_t *next)
     // can only meaningly if sees pc
     if (character_see(d, c, d->PC))
     {
-        c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-        c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+        c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC->position.x;
         monster_next_LOS(d, c, next);
     }
     else
@@ -338,8 +386,8 @@ static void monster_next_01(dungeon_t *d, character_t *c, pair_t *next)
     /* not erratic : not tunneling : not telepathic : smart */
     if (character_see(d, c, d->PC))
     {
-        c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-        c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+        c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC->position.x;
         c->mon_character->seen_PC = 1;
         monster_next_LOS(d, c, next);
     }
@@ -348,19 +396,21 @@ static void monster_next_01(dungeon_t *d, character_t *c, pair_t *next)
     {
         monster_next_LOS(d, c, next);
     }
-
-    // reaches last known point, forgets if seen if pc not there
-    if ((next->x == c->mon_character->last_known_PC_pos.x) &&
-        (next->y == c->mon_character->last_known_PC_pos.y))
+    if (c->mon_character->last_known_PC_pos.x != -1 &&
+        c->mon_character->last_known_PC_pos.y != -1)
     {
-        c->mon_character->seen_PC = 0;
+        if ((next->x == c->mon_character->last_known_PC_pos.x) &&
+            (next->y == c->mon_character->last_known_PC_pos.y))
+        {
+            c->mon_character->seen_PC = 0;
+        }
     }
 }
 static void monster_next_02(dungeon_t *d, character_t *c, pair_t *next)
 {
     /* not erratic : not tunneling : telepathic : not smart */
-    c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-    c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+    c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+    c->mon_character->last_known_PC_pos.x = d->PC->position.x;
     monster_next_LOS(d, c, next);
 }
 static void monster_next_03(dungeon_t *d, character_t *c, pair_t *next)
@@ -373,8 +423,8 @@ static void monster_next_04(dungeon_t *d, character_t *c, pair_t *next)
     /* not erratic : tunneling : not telepathic : not smart */
     if (character_see(d, c, d->PC))
     {
-        c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-        c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+        c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC->position.x;
         monster_next_LOS(d, c, next);
     }
     else
@@ -389,8 +439,8 @@ static void monster_next_05(dungeon_t *d, character_t *c, pair_t *next)
     // same as 01 but can tunnel
     if (character_see(d, c, d->PC))
     {
-        c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-        c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+        c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+        c->mon_character->last_known_PC_pos.x = d->PC->position.x;
         c->mon_character->seen_PC = 1;
         monster_next_LOS_tunnel(d, c, next);
     }
@@ -401,17 +451,29 @@ static void monster_next_05(dungeon_t *d, character_t *c, pair_t *next)
     }
 
     // reaches last known point, forgets if seen if pc not there
+
+    if (c->mon_character->last_known_PC_pos.x != -1 &&
+        c->mon_character->last_known_PC_pos.y != -1)
+    {
+        if ((next->x == c->mon_character->last_known_PC_pos.x) &&
+            (next->y == c->mon_character->last_known_PC_pos.y))
+        {
+            c->mon_character->seen_PC = 0;
+        }
+    }
+    /*
     if ((next->x == c->mon_character->last_known_PC_pos.x) &&
         (next->y == c->mon_character->last_known_PC_pos.y))
     {
         c->mon_character->seen_PC = 0;
-    }
+    }*/
 }
+
 static void monster_next_06(dungeon_t *d, character_t *c, pair_t *next)
 {
     /* not erratic : tunneling : telepathic : not smart */
-    c->mon_character->last_known_PC_pos.y = d->PC->pc->position.y;
-    c->mon_character->last_known_PC_pos.x = d->PC->pc->position.x;
+    c->mon_character->last_known_PC_pos.y = d->PC->position.y;
+    c->mon_character->last_known_PC_pos.x = d->PC->position.x;
     monster_next_LOS_tunnel(d, c, next);
 }
 static void monster_next_07(dungeon_t *d, character_t *c, pair_t *next)
@@ -519,6 +581,19 @@ static void monster_next_0f(dungeon_t *d, character_t *c, pair_t *next)
 /* master next function, calls specific move function based on that monster */
 void monster_next_position(dungeon_t *d, character_t *c, pair_t *next)
 {
+    if (!c)
+    {
+        fprintf(stderr, "Error: NULL character passed to monster_next_position()\n");
+        return;
+    }
+
+    if (!c->mon_character)
+    {
+        fprintf(stderr, "Error: Monster %c at (%d, %d) has NULL characteristics\n",
+                c->symbol, c->position.x, c->position.y);
+        return;
+    }
+
     next->y = c->position.y;
     next->x = c->position.x;
 
@@ -554,22 +629,22 @@ void monster_next_position(dungeon_t *d, character_t *c, pair_t *next)
     case 0x09:
         monster_next_09(d, c, next);
         break;
-    case 0x0A:
+    case 0x0a:
         monster_next_0a(d, c, next);
         break;
-    case 0x0B:
+    case 0x0b:
         monster_next_0b(d, c, next);
         break;
-    case 0x0C:
+    case 0x0c:
         monster_next_0c(d, c, next);
         break;
-    case 0x0D:
+    case 0x0d:
         monster_next_0d(d, c, next);
         break;
-    case 0x0E:
+    case 0x0e:
         monster_next_0e(d, c, next);
         break;
-    case 0x0F:
+    case 0x0f:
         monster_next_0f(d, c, next);
         break;
     default:

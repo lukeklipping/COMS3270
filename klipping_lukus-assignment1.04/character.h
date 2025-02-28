@@ -9,6 +9,7 @@
 typedef struct dungeon_t dungeon_t;*/
 struct monster_t;
 typedef struct monster_t monster_t;
+
 struct pc_t;
 typedef struct pc_t pc_t;
 
@@ -23,7 +24,7 @@ typedef struct character_t
     pc_t *pc;
 } character_t;
 
-int character_compare(const void *ch1, const void *ch2);
+int32_t character_compare(const void *ch1, const void *ch2);
 int character_see(dungeon_t *d, character_t *observer, character_t *target);
 void character_delete(void *c);
 

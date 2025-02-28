@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
     }
 
     dungeon_init(&dungeon);
+    heap_init(&dungeon.heap, character_compare, NULL);
 
     switch (action)
     {
@@ -113,7 +114,11 @@ int main(int argc, char *argv[])
         return 1;
     }
     generate_PC(&dungeon);
-    dungeon_print(&dungeon);
+
+    djikstra_non_tunnel(&dungeon);
+    djikstra_tunnel(&dungeon);
+
+    // dungeon_print(&dungeon);
 
     // djikstra_tunnel(&dungeon);
     // djikstra_non_tunnel(&dungeon);
@@ -121,9 +126,13 @@ int main(int argc, char *argv[])
     //  non_tunnel_map(&dungeon);
     //  printf("\nTunnel map\n");
     //  tunnel_map(&dungeon);
+    copy_to_terrain(&dungeon);
+
+    //    printf("Starting eventSim_update\n\n");
+
     eventSim_update(&dungeon);
-    printf("Starting eventSim_update\n");
-    printf("Starting eventSim_update\n");
+
+    //  printf("Starting eventSim_update\n\n");
 
     delete_dungeon(&dungeon);
 
