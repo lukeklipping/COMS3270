@@ -110,8 +110,8 @@ void eventSim_update(dungeon_t *d)
         d->character[tmp->position.y][tmp->position.x] = tmp;
 
         dungeon_print(d);
-        usleep(100000);
-    } while (d->PC->alive && d->PC);
+        usleep(50000);
+    } while (d->PC && d->PC->alive);
 
     printf("loss");
     heap_delete(&d->heap);

@@ -66,6 +66,19 @@ int main(int argc, char *argv[])
             {
                 action = action_rand;
             }
+            else if (strcmp(argv[i], "--nummon") == 0)
+            {
+                if (i + 1 < argc && sscanf(argv[i + 1], "%d", &dungeon.num_monsters) == 1)
+                {
+                    // will be auto rand
+                    i++;
+                    action = action_nummon;
+                }
+                else
+                {
+                    usage(argv[0]);
+                }
+            }
             else
             {
                 usage(argv[0]); // unknown argument
@@ -107,6 +120,9 @@ int main(int argc, char *argv[])
         }
         break;
     case action_rand:
+        dungeon_generate(&dungeon);
+        dungeon.num_monsters = BASE_MONSTERS;
+    case action_nummon:
         dungeon_generate(&dungeon);
         break;
     default:

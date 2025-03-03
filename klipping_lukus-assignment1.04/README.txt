@@ -1,13 +1,16 @@
 New files
-    heap.c & heap.h
-New methods
-    djikstra_tunnel(), djikstra_non_tunnel(), tunnel_map(), non_tunnel_map(), delete_dungeon(), hardness_weight()
+    character.c, character.h, monster.c, monster.h, path.c. path.h, readWriteDungeon.c, readWriteDungeon.h, eventSim.c, eventSim.h, rlg.c
 
-    This iteration of the roguelike dungeon assignment brings in pathfinding into the loop. Using Djikstras algorithm
-and a heap. It calculates the distance between the 'monster' (soon to come) and the Player char. It chooses a neighboring 
-cell with the lowest cost. This includes non tunneling monsters and tunneling monsters. For tunneling monsters, this is 
-when hardness comes into play. The algorithm will choose the path with the lower hardness_weight to go to.
+    This iteration of the RLG dungeon, I decided to split up most of the methods into their corresponding files to match. I believed 
+the original file was becoming to large to manage and read, with lots of scrolling, so I split them up. I made a new character.h and .c
+to represent characters with their variables, and monster.h and monster.c for a monsters variables and move functions. For the 16 
+different comibnations of monsters, 
+
+
+Currently, my PC does not move, which is why I made the 'q to quit' function in eventSim. Just in case the monsters can't find the PC.
+
 
 
 For TA:
-I believe my implementation to be correct. Makefile should compile all necessary elements.
+
+My implementation works about 85% of the time. Sometimes it hits a segfault or freezes. But it works the other times.

@@ -27,6 +27,7 @@
 #define MIN_ROOMS 6
 
 #define PC_SPEED 10
+#define BASE_MONSTERS 10
 
 #define RANDOM_RANGE(r1, r2) ({       \
     typeof(r1) _r1 = (r1);            \
@@ -50,7 +51,8 @@ typedef enum
     action_save,
     action_load,
     action_read,
-    action_rand
+    action_rand,
+    action_nummon
 } action_t;
 
 typedef struct pair_t

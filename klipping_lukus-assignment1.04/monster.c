@@ -34,7 +34,7 @@ void monsters_generate(dungeon_t *d)
     pair_t pos;
     const static char symbol[] = "0123456789ABCDEF";
 
-    d->num_monsters = 10;
+    // d->num_monsters = 10;
     for (i = 0; i < d->num_monsters; i++)
     {
         monster = malloc(sizeof(*monster));
