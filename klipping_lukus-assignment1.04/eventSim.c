@@ -12,15 +12,6 @@
 #include "path.h"
 #include "eventSim.h"
 
-int key_pressed()
-{
-    struct timeval tv = {0, 0}; // No wait time
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(STDIN_FILENO, &fds);
-    return select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
-}
-
 void eventSim_update(dungeon_t *d)
 {
     character_t *tmp;
@@ -28,19 +19,9 @@ void eventSim_update(dungeon_t *d)
     int old_y = 0;
     int old_x = 0;
     monsters_generate(d);
-    printf("Press 'q' to stop the simulation...\n");
 
     do
     {
-        if (key_pressed())
-        {
-            char c = getchar();
-            if (c == 'q')
-            {
-                printf("\nSimulation stopped by user.\n");
-                break;
-            }
-        }
 
         tmp = heap_remove_min(&d->heap);
 
@@ -110,7 +91,7 @@ void eventSim_update(dungeon_t *d)
         d->character[tmp->position.y][tmp->position.x] = tmp;
 
         dungeon_print(d);
-        usleep(50000);
+        usleep(250000);
     } while (d->PC && d->PC->alive);
 
     printf("loss");

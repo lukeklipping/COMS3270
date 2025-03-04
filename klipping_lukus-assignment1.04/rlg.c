@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
     case action_rand:
         dungeon_generate(&dungeon);
         dungeon.num_monsters = BASE_MONSTERS;
+        break;
     case action_nummon:
         dungeon_generate(&dungeon);
         break;
@@ -130,6 +131,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     generate_PC(&dungeon);
+    printf("num rooms: %d", dungeon.num_rooms);
 
     djikstra_non_tunnel(&dungeon);
     djikstra_tunnel(&dungeon);

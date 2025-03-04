@@ -55,7 +55,7 @@ void dungeon_print(dungeon_t *d)
 int is_valid(dungeon_t *d, int x, int y, int w, int h)
 {
     int i, j;
-    if ((x + w >= DUNGEON_X - 1) || (y + h >= DUNGEON_Y - 1))
+    if ((x + w >= DUNGEON_X - 2) || (y + h >= DUNGEON_Y - 2))
     {
         return 0;
     }
@@ -92,8 +92,8 @@ void generate_rooms_character(dungeon_t *d)
         // printf("%d", height);
 
         // keeps outermost barrier
-        int x = 1 + rand() % (DUNGEON_X - width - 2);
-        int y = 1 + rand() % (DUNGEON_Y - height - 2);
+        int x = 1 + rand() % (DUNGEON_X - width - 3);
+        int y = 1 + rand() % (DUNGEON_Y - height - 3);
 
         if (is_valid(d, x, y, width, height))
         {
@@ -110,10 +110,10 @@ void generate_rooms_character(dungeon_t *d)
             d->rooms[room_count].width = width;
             d->rooms[room_count].height = height;
 
-            d->num_rooms++;
             room_count++;
         }
     }
+    d->num_rooms = room_count;
 }
 
 // generates pc coords and places on map
