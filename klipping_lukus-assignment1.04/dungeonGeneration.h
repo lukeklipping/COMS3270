@@ -27,7 +27,7 @@
 #define MIN_ROOMS 6
 
 #define PC_SPEED 10
-#define BASE_MONSTERS 10
+#define BASE_MONSTERS 8
 
 #define RANDOM_RANGE(r1, r2) ({       \
     typeof(r1) _r1 = (r1);            \

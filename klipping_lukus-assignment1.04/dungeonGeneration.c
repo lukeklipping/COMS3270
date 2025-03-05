@@ -143,7 +143,7 @@ int generate_PC(dungeon_t *d)
     d->map[py][px] = PLAYER;
     // d->terrain[py][px] = PLAYER;
 
-    heap_insert(&d->heap, d->PC);
+    // heap_insert(&d->heap, d->PC);
 
     return 0;
 }

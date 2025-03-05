@@ -1,54 +1,58 @@
 2/19/2025 1:40: Moving methods
-moved path methods to path.h and path.c
+                moved path methods to path.h and path.c
 2/19/2025 1:45: removed heapsize
-accidental unused variable
+                accidental unused variable
 2/19/2025 1:45: updated makefile
 2/20/2025 2:00: moved methods  
- moved tunnel and non tunnel map into path.h and path.c
+                moved tunnel and non tunnel map into path.h and path.c
 2/20/2025 2:00: Made character_t struct
 2/20/2025 2:00: Added character map array to dungeon_t
-will need to be malloc
+                will need to be malloc
 2/20/2025 2:02: changing literals
-changed height and widht to dungeon_y and x
+                changed height and widht to dungeon_y and x
 2/24/2025 12:01: made new files
-readWriteDungeon.c and readWriteDungeon.h to make files smaller an organize.
+                readWriteDungeon.c and readWriteDungeon.h to make files smaller an organize.
 2/24/2025 12:05: Above working correctly
 2/24/2025 1:00: new character.h and character.c
 2/24/2025 2:30: monster.c
 2/25/2025 6:00: Made new static methods
-static methods for each 4 bit monster move
+                static methods for each 4 bit monster move
 2/25/2025 7:40: found can see algorithm online
-Breshamns line algo found for can see function
+                Breshamns line algo found for can see function
 2/25/2025 8:30: can_see believed to be finished
 2/25/2025 8:40: All erattic movements done
 2/25/2025 9:17: Finally found massive bug with type def
-was declaring structs with wrong names
+                was declaring structs with wrong names
 2/26/2025 12:20: Fixed bugs
-fixed bugs, program can run without new methods
+                fixed bugs, program can run without new methods
 2/26/2025 1:30: All monster methods believed to be done
 2/26/2025 1:35: Putting into makefile  
- character.c and character.h
+                character.c and character.h
 2/26/2025 1:37: Putting into makefile  
- character.c and character.h both compile
+                character.c and character.h both compile
 2/26/2025 1:37: Putting into makefile  
- monster.c and monster.h
+                monster.c and monster.h
 2/26/2025 1:47: Putting into makefile  
- monster.c and monster.h minor bugs, fixing,
+                monster.c and monster.h minor bugs, fixing,
 2/26/2025 1:51: Putting into makefile  
- monster.c and monster.h compile
+                monster.c and monster.h compile
 2/26/2025 3:00: Initial check before heap working  
- everything compiles correctly
+                everything compiles correctly
 2/26/2025 3:30: eventSim finished
 2/26/2025 3:47: new game file
-moving main to rlg.c
+                moving main to rlg.c
 2/26/2025 4:00: testing
 2/26/2025 4:15: ran into big bug
 2/27/2025 3:15: found bug 1
-pc was being put into heap 2x
+                 pc was being put into heap 2x
 2/27/2025 3:15: bug 2
-monsters going out of bounds
+                monsters going out of bounds
 2/27/2025 3:15: found bug 2
-added hardness check for out of bounds != 255
+                added hardness check for out of bounds != 255
 3/03/2024 2:20: adding nummon  
- will be its own flag
+                will be its own flag
 3/03/2024 2:20: nummon works
+3/04/2024 3:42: added isOcuupied
+                checks whether the next space has monster, is immutable, and is in bounds
+3/04/2024 7:10: increased sight for can see
+3/04/2024 7:13: turning in

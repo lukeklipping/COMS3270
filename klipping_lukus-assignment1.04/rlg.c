@@ -131,7 +131,6 @@ int main(int argc, char *argv[])
         return 1;
     }
     generate_PC(&dungeon);
-    printf("num rooms: %d", dungeon.num_rooms);
 
     djikstra_non_tunnel(&dungeon);
     djikstra_tunnel(&dungeon);

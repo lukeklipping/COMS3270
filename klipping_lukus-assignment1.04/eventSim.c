@@ -31,12 +31,13 @@ void eventSim_update(dungeon_t *d)
             break;
         }
         // pc doesnt move yet
+        /*
         if (tmp == d->PC)
         {
             tmp->sequence += (1000 / tmp->speed);
             heap_insert(&d->heap, tmp);
             continue;
-        }
+        }*/
         old_y = tmp->position.y;
         old_x = tmp->position.x;
 
@@ -67,12 +68,6 @@ void eventSim_update(dungeon_t *d)
             }
         }
 
-        if (d->character[next_pos.y][next_pos.x] != NULL)
-        {
-            next_pos.x = tmp->position.x;
-            next_pos.y = tmp->position.y;
-        }
-
         tmp->position.x = next_pos.x;
         tmp->position.y = next_pos.y;
 
@@ -80,21 +75,15 @@ void eventSim_update(dungeon_t *d)
 
         tmp->sequence += (1000 / tmp->speed);
 
-        heap_insert(&d->heap, tmp);
-        if (tmp->position.y < 0 || tmp->position.y >= DUNGEON_Y ||
-            tmp->position.x < 0 || tmp->position.x >= DUNGEON_X)
-        {
-            printf("ERROR: Attempted to access out-of-bounds position (%d, %d)\n",
-                   tmp->position.y, tmp->position.x);
-            return;
-        }
         d->character[tmp->position.y][tmp->position.x] = tmp;
 
+        heap_insert(&d->heap, tmp);
+
         dungeon_print(d);
-        usleep(250000);
+        usleep(100000);
     } while (d->PC && d->PC->alive);
 
-    printf("loss");
+    printf("\nyou lose, player dead\n\n");
     heap_delete(&d->heap);
 
     delete_characterArray(d);

@@ -13,4 +13,6 @@ Currently, my PC does not move, which is why I made the 'q to quit' function in 
 
 For TA:
 
-My implementation works about 85% of the time. Sometimes it hits a segfault or freezes. But it works the other times.
+My implementation works about 85% of the time. Sometimes it hits a segfault or freezes.
+
+IF IT FREEZES, exit the code with escape hot key, and re run code.
