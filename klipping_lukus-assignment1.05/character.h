@@ -26,8 +26,6 @@ typedef struct character_t
 
 int32_t character_compare(const void *ch1, const void *ch2);
 int character_see(dungeon_t *d, character_t *observer, character_t *target);
-
-// int same_room(dungeon_t *d, character_t *observer, character_t *target);
 void character_delete(void *c);
 
 #endif

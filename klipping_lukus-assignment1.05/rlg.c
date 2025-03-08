@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <ncurses.h>
 
 #include "path.h"
 #include "dungeonGeneration.h"
@@ -9,6 +10,9 @@
 #include "readWriteDungeon.h"
 #include "eventSim.h"
 #include "pc.h"
+#include "move.h"
+#include "io.h"
+#include "monster.h"
 
 // generates dungeon for --rand
 void dungeon_generate(dungeon_t *d)
@@ -134,9 +138,16 @@ int main(int argc, char *argv[])
     pc_place(&dungeon);
     pc_generate(&dungeon);
 
-    copy_to_terrain(&dungeon);
+    io_terminal_init();
+    char key;
 
-    eventSim_update(&dungeon);
+    do
+    {
+        // ncurses dungeon make
+        key = getchar();
+        move_turn_base(&dungeon, key);
+
+    } while (pc_alive(&dungeon) && monsters_number(&dungeon));
 
     delete_dungeon(&dungeon);
 

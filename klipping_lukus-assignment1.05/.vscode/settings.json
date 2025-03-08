@@ -1,5 +1,6 @@
 {
   "files.associations": {
-    "pc.h": "c"
+    "pc.h": "c",
+    "dungeongeneration.h": "c"
   }
 }

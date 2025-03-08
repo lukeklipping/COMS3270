@@ -37,6 +37,9 @@
 
 #define cellHardness(y, x) d->hardness[y][x]
 
+#define charpair(pair) (d->character[(pair).y][(pair).x])
+#define mappair(pair) (d->map[((pair).y)][(pair).x])
+
 struct character_t;
 typedef struct character_t character_t;
 
@@ -74,9 +77,8 @@ typedef struct dungeon_t
     character_t *PC;
     heap_t heap;
     int num_monsters;
+    int seq;
 } dungeon_t;
-
-void dungeon_empty_init(dungeon_t *d);
 
 void dungeon_init(dungeon_t *d);
 void dungeon_print(dungeon_t *d);
@@ -84,15 +86,8 @@ int is_valid(dungeon_t *d, int, int, int, int);
 void generate_rooms(dungeon_t *d);
 void generate_corridor(dungeon_t *d);
 void generate_stairs(dungeon_t *d);
-int count_up_stairs(dungeon_t *d);
-int count_down_stairs(dungeon_t *d);
-int read_dungeon_map(dungeon_t *d, FILE *f);
-int read_rooms(dungeon_t *d, FILE *f);
-int read_stairs(dungeon_t *d, FILE *f);
-int load_dungeon(dungeon_t *d, char *f);
-int save_dungeon(dungeon_t *d, char *f);
-int save_stairs(dungeon_t *d, FILE *f);
 void delete_dungeon(dungeon_t *d);
+void dungeon_new(dungeon_t *d);
 
 void delete_characterArray(dungeon_t *d);
 

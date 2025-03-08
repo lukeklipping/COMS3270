@@ -1,3 +1,17 @@
 3/07/2025 9:07: Beginning work on 1.05
 3/07/2025 9:34: Making pc.c and pc.h
                 adding to makefile
+3/07/2025 9:57: organizing code
+3/07/2025 10:15: New move.c and move.h
+                for determining character movement
+3/07/2025 10:20: new macros
+                mappair and charpair from prof code
+3/07/2025 10:35: added move_pc
+                switch statement keybinds
+3/07/2025 10:50: added new dungeon method
+                added a generate dungeon whole floor for stairs
+3/07/2025 11:08: moving methods
+                moving eventSimUpdate to move.c. 
+                Works better within this code
+3/07/2025 11:30: new io
+                to organize ncurses screen init

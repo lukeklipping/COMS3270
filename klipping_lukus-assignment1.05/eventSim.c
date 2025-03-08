@@ -84,7 +84,4 @@ void eventSim_update(dungeon_t *d)
     } while (d->PC && d->PC->alive);
 
     printf("\nyou lose, player dead\n\n");
-    heap_delete(&d->heap);
-
-    delete_characterArray(d);
 }

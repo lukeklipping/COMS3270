@@ -6,17 +6,13 @@
 #include "dungeonGeneration.h"
 #include "character.h"
 #include "readWriteDungeon.h"
+#include "monster.h"
+#include "pc.h"
 
 // char dungeon[DUNGEON_Y][DUNGEON_X];
 //  fills dungeon with rock and initializes hardness
 void dungeon_init(dungeon_t *d)
 {
-    dungeon_empty_init(d);
-}
-
-void dungeon_empty_init(dungeon_t *d)
-{
-
     int x, y;
     for (y = 0; y < DUNGEON_Y; y++)
     {
@@ -36,6 +32,22 @@ void dungeon_empty_init(dungeon_t *d)
         }
     }
 }
+
+/* New dungeon function for travelling levels */
+void dungeon_new(dungeon_t *d)
+{
+    int seq = d->seq;
+
+    delete_dungeon(d);
+    dungeon_empty_init(d);
+    generate_rooms(d);
+    generate_corridor(d);
+    generate_stairs(d);
+    d->seq = seq;
+    pc_generate(d);
+    monsters_generate(d);
+}
+
 // prints dungeon
 void dungeon_print(dungeon_t *d)
 {
@@ -184,7 +196,6 @@ void generate_stairs(dungeon_t *d)
     //> down
     char stairs[2] = {'<', '>'};
     int i, y, x;
-    // d->stairs = malloc(2 * sizeof(pair_t));
 
     for (i = 0; i < 2; i++)
     {
@@ -194,22 +205,21 @@ void generate_stairs(dungeon_t *d)
             y = d->rooms[room_index].y + (rand() % d->rooms[room_index].height);
             x = d->rooms[room_index].x + (rand() % d->rooms[room_index].width);
         } while (d->map[y][x] != ROOM);
-        // d->stairs[i].x = x;
-        // d->stairs[i].y = y;
+
         d->map[y][x] = stairs[i];
         d->hardness[y][x] = 0;
     }
-    // d->num_up_stairs++;
-    // d->num_down_stairs++;
 }
 
-// frees dungeon variables
+/* Frees all needed variables within dungeon */
 void delete_dungeon(dungeon_t *d)
 {
-    // free(d->character);
     free(d->rooms);
+    delete_characterArray(d);
+    heap_delete(&d->heap);
 }
 
+/* Sets character array to null and mon_character within to NULL */
 void delete_characterArray(dungeon_t *d)
 {
     for (int i = 0; i < DUNGEON_Y; i++)
