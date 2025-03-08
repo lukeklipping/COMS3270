@@ -1,5 +1,9 @@
 {
   "files.associations": {
-    "pc.h": "c"
+    "pc.h": "c",
+    "dungeongeneration.h": "c",
+    "stdio.h": "c",
+    "errno.h": "c",
+    "tuple": "c"
   }
 }

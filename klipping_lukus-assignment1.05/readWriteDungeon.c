@@ -9,6 +9,40 @@
 #include "character.h"
 #include "readWriteDungeon.h"
 
+// helper method to count '<'
+static int count_up_stairs(dungeon_t *d)
+{
+    int x, y, i = 0;
+    for (y = 0; y < DUNGEON_Y; y++)
+    {
+        for (x = 0; x < DUNGEON_X; x++)
+        {
+            if (d->map[y][x] == '<')
+            {
+                i++;
+            }
+        }
+    }
+    return i;
+}
+
+// helper method to count '>'
+static int count_down_stairs(dungeon_t *d)
+{
+    int x, y, i = 0;
+    for (y = 0; y < DUNGEON_Y; y++)
+    {
+        for (x = 0; x < DUNGEON_X; x++)
+        {
+            if (d->map[y][x] == '>')
+            {
+                i++;
+            }
+        }
+    }
+    return i;
+}
+
 // saves stairs
 int save_stairs(dungeon_t *d, FILE *f)
 {
@@ -47,40 +81,6 @@ int save_stairs(dungeon_t *d, FILE *f)
         }
     }
     return 0;
-}
-
-// helper method to count '<'
-int count_up_stairs(dungeon_t *d)
-{
-    int x, y, i = 0;
-    for (y = 0; y < DUNGEON_Y; y++)
-    {
-        for (x = 0; x < DUNGEON_X; x++)
-        {
-            if (d->map[y][x] == '<')
-            {
-                i++;
-            }
-        }
-    }
-    return i;
-}
-
-// helper method to count '>'
-int count_down_stairs(dungeon_t *d)
-{
-    int x, y, i = 0;
-    for (y = 0; y < DUNGEON_Y; y++)
-    {
-        for (x = 0; x < DUNGEON_X; x++)
-        {
-            if (d->map[y][x] == '>')
-            {
-                i++;
-            }
-        }
-    }
-    return i;
 }
 
 // fileread helper to place dungeon map

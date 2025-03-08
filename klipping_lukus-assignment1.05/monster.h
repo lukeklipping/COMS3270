@@ -51,7 +51,7 @@ typedef struct monster_t
 } monster_t;
 
 void monsters_generate(dungeon_t *d);
-void monster_next_position(dungeon_t *d, character_t *c, pair_t *next);
+void monster_next_position(dungeon_t *d, character_t *c, pair_t next);
 void monsters_delete(monster_t *m);
 int monsters_number(dungeon_t *d);
 // int32_t monster_comp(const void *c1, const void *c2);

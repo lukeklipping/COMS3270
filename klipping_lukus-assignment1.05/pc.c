@@ -3,6 +3,9 @@
 #include "character.h"
 #include "pc.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 /* Deletes PC */
 void pc_delete(pc_t *p)
 {
