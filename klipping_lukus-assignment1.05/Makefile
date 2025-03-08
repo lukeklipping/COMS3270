@@ -3,8 +3,8 @@ CFLAGS = -Werror -Wall
 
 all: dungeon
 
-dungeon: rlg.o heap.o dungeonGeneration.o path.o readWriteDungeon.o character.o monster.o eventSim.o pc.o move.o io.o
-	gcc $(CFLAGS) -o dungeon rlg.o heap.o dungeonGeneration.o path.o readWriteDungeon.o character.o monster.o eventSim.o pc.o move.o io.o
+dungeon: rlg.o heap.o dungeonGeneration.o path.o readWriteDungeon.o character.o monster.o eventSim.o pc.o move.o #io.o
+	gcc $(CFLAGS) -o dungeon rlg.o heap.o dungeonGeneration.o path.o readWriteDungeon.o character.o monster.o eventSim.o pc.o move.o 
 
 rlg.o: rlg.c
 	gcc $(CFLAGS) -c rlg.c
@@ -36,8 +36,8 @@ pc.o: pc.c pc.h
 move.o: move.c move.h
 	gcc $(CFLAGS) -c move.c
 
-io.o: io.c io.h
-	gcc $(CFLAGS) -c io.c
+#io.o: io.c io.h
+#	gcc $(CFLAGS) -c io.c
 
 
 clean:

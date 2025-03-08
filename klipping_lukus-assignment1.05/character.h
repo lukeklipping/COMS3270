@@ -5,6 +5,13 @@
 #define SIGHT_DISTANCE 20
 #include "dungeonGeneration.h"
 
+typedef enum kill_type
+{
+    kill_direct,
+    kill_avenged,
+    num_kill_types
+} kill_type_t;
+
 /*struct dungeon_t;
 typedef struct dungeon_t dungeon_t;*/
 struct monster_t;
@@ -22,6 +29,8 @@ typedef struct character_t
     int sequence;
     monster_t *mon_character;
     pc_t *pc;
+    uint32_t kills[num_kill_types];
+
 } character_t;
 
 int32_t character_compare(const void *ch1, const void *ch2);

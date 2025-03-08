@@ -39,6 +39,7 @@
 
 #define charpair(pair) (d->character[(pair).y][(pair).x])
 #define mappair(pair) (d->map[((pair).y)][(pair).x])
+#define mapxy(x, y) (d->map[y][x])
 
 struct character_t;
 typedef struct character_t character_t;
@@ -78,6 +79,8 @@ typedef struct dungeon_t
     heap_t heap;
     int num_monsters;
     int seq;
+    int time;
+    int is_new;
 } dungeon_t;
 
 void dungeon_init(dungeon_t *d);

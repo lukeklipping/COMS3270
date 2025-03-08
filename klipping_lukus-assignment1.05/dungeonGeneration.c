@@ -39,7 +39,7 @@ void dungeon_new(dungeon_t *d)
     int seq = d->seq;
 
     delete_dungeon(d);
-    dungeon_empty_init(d);
+    dungeon_init(d);
     generate_rooms(d);
     generate_corridor(d);
     generate_stairs(d);

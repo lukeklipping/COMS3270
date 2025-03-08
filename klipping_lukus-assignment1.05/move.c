@@ -4,78 +4,107 @@
 #include "character.h"
 #include "monster.h"
 #include "pc.h"
+#include "eventSim.h"
+#include "path.h"
 
-/*TODO: Fix */
-void move_turn_base(dungeon_t *d, uint32_t direction)
+#include <stdint.h>
+#include <stdlib.h>
+
+void do_combat(dungeon_t *d, character_t *atk, character_t *def)
+{
+    if (def->alive)
+    {
+        def->alive = 0;
+        if (def != &d->PC)
+        {
+            d->num_monsters--;
+        }
+        atk->kills[kill_direct]++;
+        atk->kills[kill_avenged] += (def->kills[kill_direct] +
+                                     def->kills[kill_avenged]);
+    }
+}
+
+void move_turn_base(dungeon_t *d) // uint32_t direction
 {
     character_t *tmp;
     pair_t next_pos;
-    int old_y = 0;
-    int old_x = 0;
-    monsters_generate(d);
+    event_t *e;
 
-    do
+    /* Remove the PC when it is PC turn.  Replace on next call.  This allows *
+     * use to completely uninit the heap when generating a new level without *
+     * worrying about deleting the PC.                                       */
+    // int old_y = 0;
+    // int old_x = 0;
+
+    if (pc_alive(d))
     {
-
-        tmp = heap_remove_min(&d->heap);
-
-        if (!tmp)
+        e = malloc(sizeof(*e));
+        e->type = event_character_turn;
+        if (d->is_new)
         {
-            printf("Heap is empty! Ending simulation.\n");
-            break;
-        }
-        // pc doesnt move yet
-        /*
-        if (tmp == d->PC)
-        {
-            tmp->sequence += (1000 / tmp->speed);
-            heap_insert(&d->heap, tmp);
-            continue;
-        }*/
-        old_y = tmp->position.y;
-        old_x = tmp->position.x;
-
-        d->character[tmp->position.y][tmp->position.x] = NULL;
-
-        monster_next_position(d, tmp, &next_pos);
-
-        if (d->PC && next_pos.x == d->PC->position.x && next_pos.y == d->PC->position.y)
-        {
-            d->PC->alive = 0;
-            break;
-        }
-
-        // If monster is a not tunneler, leave corridors behind
-        if (!(tmp->mon_character->characteristic & MON_TUNNEL))
-        {
-            d->map[old_y][old_x] = d->terrain[old_y][old_x];
+            d->is_new = 0;
+            e->time = d->time;
         }
         else
         {
-            if (d->terrain[old_y][old_x] != ROOM)
+            e->time = d->time + (1000 / d->PC->speed);
+        }
+        e->sequence = 0;
+        e->c = &d->PC;
+        heap_insert(&d->heap, e);
+    }
+
+    while (pc_alive(d) &&
+           (e = heap_remove_min(&d->heap)) &&
+           ((e->type != event_character_turn) || (e->c != &d->PC)))
+    {
+        d->time = e->time;
+        if (e->type == event_character_turn)
+        {
+            tmp = e->c;
+        }
+        if (!tmp->alive)
+        {
+            if (d->character[tmp->position.y][tmp->position.x] == tmp)
             {
-                d->map[old_y][old_x] = HALL;
+                d->character[tmp->position.y][tmp->position.x] = NULL;
             }
-            else
+            if (tmp != &d->PC)
             {
-                d->map[old_y][old_x] = d->terrain[old_y][old_x]; // restore original room
+                event_delete(e);
             }
+            continue;
         }
 
-        tmp->position.x = next_pos.x;
-        tmp->position.y = next_pos.y;
+        monster_next_position(d, tmp, next_pos);
+        move_character(d, tmp, next_pos);
 
-        d->map[tmp->position.y][tmp->position.x] = tmp->symbol;
+        heap_insert(&d->heap, update_event(d, e, 1000 / tmp->speed));
+    }
 
-        tmp->sequence += (1000 / tmp->speed);
+    if (pc_alive(d) && e->c == &d->PC)
+    {
+        tmp = e->c;
+        d->time = e->time;
+        /* Kind of kludgey, but because the PC is never in the queue when   *
+         * we are outside of this function, the PC event has to get deleted *
+         * and recreated every time we leave and re-enter this function.    */
+        e->c = NULL;
+        event_delete(e);
+        pc_next_pos(d, next_pos);
+        next_pos.x += tmp->position.x;
+        next_pos.y += tmp->position.y;
+        if (mappair(next_pos) == ROOM || mappair(next_pos) == ROCK)
+        {
+            mappair(next_pos) = HALL;
+            d->hardness[next_pos.y][next_pos.x] = 0;
+        }
+        move_character(d, tmp, next_pos);
 
-        d->character[tmp->position.y][tmp->position.x] = tmp;
-
-        heap_insert(&d->heap, tmp);
-
-        dungeon_print(d);
-        usleep(100000);
-    } while (pc_alive(d));
+        djikstra_non_tunnel(d);
+        djikstra_tunnel(d);
+    }
 
     printf("\nyou lose, player dead\n\n");
 }
@@ -176,4 +205,51 @@ int move_pc(dungeon_t *d, int direction)
         return 0;
     }
     return 1;
+}
+
+/* From prof code */
+void dir_nearest_wall(dungeon_t *d, character_t *c, pair_t dir)
+{
+    dir.x = dir.y = 0;
+
+    if (c->position.x != 1 && c->position.x != DUNGEON_X - 2)
+    {
+        dir.x = (c->position.x > DUNGEON_X - c->position.x ? 1 : -1);
+    }
+    if (c->position.y != 1 && c->position.y != DUNGEON_Y - 2)
+    {
+        dir.y = (c->position.y > DUNGEON_Y - c->position.y ? 1 : -1);
+    }
+}
+
+/* From prof code */
+uint32_t against_wall(dungeon_t *d, character_t *c)
+{
+    return ((mapxy(c->position.x - 1,
+                   c->position.y) == IMMUTABLE_WALL) ||
+            (mapxy(c->position.x + 1,
+                   c->position.y) == IMMUTABLE_WALL) ||
+            (mapxy(c->position.x,
+                   c->position.y - 1) == IMMUTABLE_WALL) ||
+            (mapxy(c->position.x,
+                   c->position.y + 1) == IMMUTABLE_WALL));
+}
+
+/* From prof code */
+uint32_t in_corner(dungeon_t *d, character_t *c)
+{
+    uint32_t num_immutable;
+
+    num_immutable = 0;
+
+    num_immutable += (mapxy(c->position.x - 1,
+                            c->position.y) == IMMUTABLE_WALL);
+    num_immutable += (mapxy(c->position.x + 1,
+                            c->position.y) == IMMUTABLE_WALL);
+    num_immutable += (mapxy(c->position.x,
+                            c->position.y - 1) == IMMUTABLE_WALL);
+    num_immutable += (mapxy(c->position.x,
+                            c->position.y + 1) == IMMUTABLE_WALL);
+
+    return num_immutable > 1;
 }

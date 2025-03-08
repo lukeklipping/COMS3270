@@ -12,76 +12,62 @@
 #include "path.h"
 #include "eventSim.h"
 
-void eventSim_update(dungeon_t *d)
+static uint32_t next_event_number(void)
 {
-    character_t *tmp;
-    pair_t next_pos;
-    int old_y = 0;
-    int old_x = 0;
-    monsters_generate(d);
+    static uint32_t sequence_number;
 
-    do
-    {
-
-        tmp = heap_remove_min(&d->heap);
-
-        if (!tmp)
-        {
-            printf("Heap is empty! Ending simulation.\n");
-            break;
-        }
-        // pc doesnt move yet
-        /*
-        if (tmp == d->PC)
-        {
-            tmp->sequence += (1000 / tmp->speed);
-            heap_insert(&d->heap, tmp);
-            continue;
-        }*/
-        old_y = tmp->position.y;
-        old_x = tmp->position.x;
-
-        d->character[tmp->position.y][tmp->position.x] = NULL;
-
-        monster_next_position(d, tmp, &next_pos);
-
-        if (d->PC && next_pos.x == d->PC->position.x && next_pos.y == d->PC->position.y)
-        {
-            d->PC->alive = 0;
-            break;
-        }
-
-        // If monster is a not tunneler, leave corridors behind
-        if (!(tmp->mon_character->characteristic & MON_TUNNEL))
-        {
-            d->map[old_y][old_x] = d->terrain[old_y][old_x];
-        }
-        else
-        {
-            if (d->terrain[old_y][old_x] != ROOM)
-            {
-                d->map[old_y][old_x] = HALL;
-            }
-            else
-            {
-                d->map[old_y][old_x] = d->terrain[old_y][old_x]; // restore original room
-            }
-        }
-
-        tmp->position.x = next_pos.x;
-        tmp->position.y = next_pos.y;
-
-        d->map[tmp->position.y][tmp->position.x] = tmp->symbol;
-
-        tmp->sequence += (1000 / tmp->speed);
-
-        d->character[tmp->position.y][tmp->position.x] = tmp;
-
-        heap_insert(&d->heap, tmp);
-
-        dungeon_print(d);
-        usleep(100000);
-    } while (d->PC && d->PC->alive);
-
-    printf("\nyou lose, player dead\n\n");
+    /* We need to special case the first PC insert, because monsters go *
+     * into the queue before the PC.  Pre-increment ensures that this   *
+     * starts at 1, so we can use a zero there.                         */
+    return ++sequence_number;
 }
+
+int32_t compare_events(const void *event1, const void *event2)
+{
+    int32_t difference;
+
+    difference = (((event_t *)event1)->time -
+                  ((event_t *)event2)->time);
+    return difference ? difference : (((event_t *)event1)->sequence - ((event_t *)event2)->sequence);
+}
+
+event_t *new_event(dungeon_t *d, event_type_t t, void *v, uint32_t delay)
+{
+    event_t *e;
+
+    e = malloc(sizeof(*e));
+
+    e->type = t;
+    e->time = d->time + delay;
+    e->sequence = next_event_number();
+    switch (t)
+    {
+    case event_character_turn:
+        e->c = v;
+    }
+
+    return e;
+}
+
+event_t *update_event(dungeon_t *d, event_t *e, uint32_t delay)
+{
+    e->time = d->time + delay;
+    e->sequence = next_event_number();
+
+    return e;
+}
+
+void event_delete(void *e)
+{
+    event_t *event = e;
+
+    switch (event->type)
+    {
+    case event_character_turn:
+        character_delete(event->c);
+        break;
+    }
+
+    free(event);
+}
+/* moved eventSim to move */
