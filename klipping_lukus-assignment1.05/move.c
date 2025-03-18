@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "path.h"
 #include "event.h"
+#include "io.h"
 
 void do_combat(dungeon_t *d, character_t *atk, character_t *def)
 {
@@ -118,15 +119,8 @@ void do_moves(dungeon_t *d, uint32_t key)
      * and recreated every time we leave and re-enter this function.    */
     e->c = NULL;
     event_delete(e);
-    pc_next_pos(d, next);
-    next[dim_x] += c->position[dim_x];
-    next[dim_y] += c->position[dim_y];
-    if (mappair(next) <= ter_floor)
-    {
-      mappair(next) = ter_floor_hall;
-      hardnesspair(next) = 0;
-    }
-    move_character(d, c, next);
+
+    move_pc(d, key);
 
     dijkstra(d);
     dijkstra_tunnel(d);
@@ -242,6 +236,9 @@ int move_pc(dungeon_t *d, int direction)
       onStairs = 1;
       dungeon_new(d);
     }
+    break;
+  case 'm':
+    io_display_list(d);
     break;
   }
 
