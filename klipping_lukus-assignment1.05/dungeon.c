@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <assert.h>
 #include <errno.h>
+#include <ncurses.h>
 
 #include "heap.h"
 #include "dungeon.h"
@@ -723,6 +724,7 @@ int gen_dungeon(dungeon_t *d)
   return 0;
 }
 
+/*
 void render_dungeon(dungeon_t *d)
 {
   pair_t p;
@@ -770,6 +772,102 @@ void render_dungeon(dungeon_t *d)
   }
   putchar('\n');
   putchar('\n');
+}*/
+/* ncurses */
+void render_dungeon(dungeon_t *d)
+{
+  pair_t pos;
+  move(0, 0);
+  clrtoeol(); // clear
+  int x, y, display_y, display_x, start_x, start_y;
+  display_x = 0;
+  display_y = 0;
+  start_y = 0;
+  start_x = 0;
+  y = d->pc.position[dim_y];
+  x = d->pc.position[dim_x];
+  if (x < 80)
+  {
+    display_x = 80;
+    start_x = 0;
+  }
+  else
+  {
+    display_x = 160;
+    start_x = 80;
+  }
+  if (y < 21)
+  {
+    display_y = 21;
+    start_y = 0;
+  }
+  if (y > 20 && y < 42)
+  {
+    display_y = 42;
+    start_y = 21;
+  }
+  if (y > 41 && y < 63)
+  {
+    display_y = 63;
+    start_y = 42;
+  }
+  if (y > 62 && y < 84)
+  {
+    display_y = 84;
+    start_y = 63;
+  }
+  if (y > 83 && y < 105)
+  {
+    display_y = 105;
+    start_y = 84;
+  }
+  int locx, locy;
+  locx = 0;
+  locy = 0;
+
+  mvprintw(0, 15, "Control Mode");
+  mvprintw(22, 33, "Roguelike 327");
+  for (pos[dim_y] = start_y; pos[dim_y] < display_y; pos[dim_y]++, locy++)
+  {
+    for (pos[dim_x] = start_x; pos[dim_x] < display_x; pos[dim_x]++, locx++)
+    {
+      if (charpair(pos))
+      {
+        mvaddch(locy + 1, locx, d->character[pos[dim_y]][pos[dim_x]]->symbol);
+      }
+      else
+      {
+        switch (mappair(pos))
+        {
+        case ter_wall:
+        case ter_wall_immutable:
+          mvaddch(locy + 1, locx, ' ');
+          break;
+        case ter_floor:
+        case ter_floor_room:
+          mvaddch(locy + 1, locx, '.');
+          break;
+        case ter_floor_hall:
+          mvaddch(locy + 1, locx, '#');
+          break;
+        case ter_debug:
+          mvaddch(locy + 1, locx, '*');
+          // fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
+          break;
+        case ter_stairs:
+        case ter_stairs_up:
+          mvaddch(locy + 1, locx, '<');
+          break;
+        case ter_stairs_down:
+          mvaddch(locy + 1, locx, '>');
+          break;
+        }
+      }
+    }
+    // putchar('\n');
+    locx = 0;
+  }
+  refresh();
 }
 
 void delete_dungeon(dungeon_t *d)

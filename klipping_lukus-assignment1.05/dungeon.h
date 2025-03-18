@@ -71,11 +71,6 @@ typedef struct dungeon
   uint16_t num_monsters;
   uint16_t max_monsters;
   uint32_t character_sequence_number;
-  /* Game time isn't strictly necessary.  It's implicit in the turn number *
-   * of the most recent thing removed from the event queue; however,       *
-   * including it here--and keeping it up to date--provides a measure of   *
-   * convenience, e.g., the ability to create a new event without explicit *
-   * information from the current event.                                   */
   uint32_t time;
   uint32_t is_new;
 } dungeon_t;

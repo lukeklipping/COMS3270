@@ -266,11 +266,11 @@ int main(int argc, char *argv[])
   do
   {
     render_dungeon(&d);
-    key = getchar();
+    key = getch();
     do_moves(&d, key);
     if (!(pc_is_alive(&d) && dungeon_has_npcs(&d) && key != 'Q'))
     {
-      break;
+      endwin(); // resets terminal
     }
 
   } while (pc_is_alive(&d) && dungeon_has_npcs(&d) && key != 'Q');
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
       free(save_file);
     }
   }
-
+  endwin();
   printf("%s", pc_is_alive(&d) ? victory : tombstone);
   printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
