@@ -17,3 +17,5 @@
                 to organize ncurses screen init
 3/08/2025 2:30: Added in prof code     
                 Added code from prof code due to buggy 1.04, Modified to my code
+3/17/2025 8:00: changed whole code
+                decided to work off of prof code
