@@ -40,6 +40,11 @@ void io_display_list(dungeon_t *d)
 
     do
     {
+        clear();
+        mvprintw(0, list_start_x, "Monster List (%d total, %d x %d screen)",
+                 d->num_monsters, max_x, max_y);
+
+        int displayed = 0; // Count monsters displayed
         for (y = 0; y < DUNGEON_Y && line < max_y; y++)
         {
             for (x = 0; x < DUNGEON_X && line < max_y; x++)
@@ -49,9 +54,24 @@ void io_display_list(dungeon_t *d)
                 {
                     continue;
                 }
+                // Check if this monster is within the scroll window
+                if (displayed >= scroll_offset)
+                {
+                    int dis_y = pc_y - y;
+                    int dis_x = pc_x - x;
 
-                int dis_x = pc_x - x;
-                int dis_y = pc_y - y;
+                    char ns_dir[6], ew_dir[6];
+                    sprintf(ns_dir, "%s", dis_y >= 0 ? "north" : "south");
+                    sprintf(ew_dir, "%s", dis_x >= 0 ? "west" : "east");
+
+                    int abs_dis_y = dis_y >= 0 ? dis_y : -dis_y;
+                    int abs_dis_x = dis_x >= 0 ? dis_x : -dis_x;
+
+                    mvprintw(list_start_y + displayed - scroll_offset, list_start_x,
+                             "%c, %d %s and %d %s",
+                             c->symbol, abs_dis_y, ns_dir, abs_dis_x, ew_dir);
+                }
+                displayed++;
             }
         }
 

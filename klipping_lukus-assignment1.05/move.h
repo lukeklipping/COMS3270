@@ -18,6 +18,6 @@ uint32_t in_corner(dungeon_t *d, character_t *c);
 uint32_t against_wall(dungeon_t *d, character_t *c);
 void move_character(dungeon_t *d, character_t *c, pair_t next);
 
-int move_pc(dungeon_t *d, int direction);
+int move_pc(dungeon_t *d, uint32_t);
 
 #endif

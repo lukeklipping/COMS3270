@@ -91,6 +91,6 @@ void render_distance_map(dungeon_t *d);
 void render_tunnel_distance_map(dungeon_t *d);
 void render_hardness_map(dungeon_t *d);
 void render_movement_cost_map(dungeon_t *d);
-void dungeon_new(dungeon_t *d);
+void new_dungeon(dungeon_t *d);
 
 #endif

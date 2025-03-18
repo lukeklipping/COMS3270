@@ -272,7 +272,6 @@ int main(int argc, char *argv[])
     {
       endwin(); // resets terminal
     }
-
   } while (pc_is_alive(&d) && dungeon_has_npcs(&d) && key != 'Q');
 
   if (do_save)

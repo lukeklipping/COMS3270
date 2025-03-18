@@ -172,7 +172,7 @@ uint32_t in_corner(dungeon_t *d, character_t *c)
 }
 
 /* Move pc based on key presses */
-int move_pc(dungeon_t *d, int direction)
+int move_pc(dungeon_t *d, uint32_t direction)
 {
   pair_t next; // Changed from nextPos to next to match pair_t convention
   int onStairs = 0;
@@ -183,43 +183,43 @@ int move_pc(dungeon_t *d, int direction)
 
   switch (direction)
   {
-  case 7:
+  case '7':
   case 'y':
     next[dim_y]--;
     next[dim_x]--;
     break;
-  case 8:
+  case '8':
   case 'k':
     next[dim_y]--;
     break;
-  case 9:
+  case '9':
   case 'u':
     next[dim_y]--;
     next[dim_x]++;
     break;
-  case 6:
+  case '6':
   case 'l':
     next[dim_x]++;
     break;
-  case 3:
+  case '3':
   case 'n':
     next[dim_y]++;
     next[dim_x]++;
     break;
-  case 2:
+  case '2':
   case 'j':
     next[dim_y]++;
     break;
-  case 1:
+  case '1':
   case 'b':
     next[dim_y]++;
     next[dim_x]--;
     break;
-  case 4:
+  case '4':
   case 'h':
     next[dim_x]--;
     break;
-  case 5:
+  case '5':
   case ' ':
   case '.':
     break;
@@ -227,18 +227,15 @@ int move_pc(dungeon_t *d, int direction)
     if (mappair(d->pc.position) == '<')
     {
       onStairs = 1;
-      dungeon_new(d);
+      new_dungeon(d);
     }
     break;
   case '<':
     if (mappair(d->pc.position) == '<')
     {
       onStairs = 1;
-      dungeon_new(d);
+      new_dungeon(d);
     }
-    break;
-  case 'm':
-    io_display_list(d);
     break;
   }
 
