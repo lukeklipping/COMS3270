@@ -1,18 +1,20 @@
 #ifndef PC_H
-#define PC_H
+# define PC_H
 
-struct dungeon_t;
-typedef struct dungeon_t dungeon_t;
+# include <stdint.h>
 
-typedef struct pc_t
-{
-    // future attacks ??
+# include "dims.h"
+
+typedef struct dungeon dungeon_t;
+
+typedef struct pc {
 } pc_t;
 
-void pc_delete(pc_t *p);
-int pc_alive(dungeon_t *d);
-void pc_place(dungeon_t *d);
-int pc_generate(dungeon_t *d);
-int pc_within_room(dungeon_t *d, int);
+void pc_delete(pc_t *pc);
+uint32_t pc_is_alive(dungeon_t *d);
+void config_pc(dungeon_t *d);
+uint32_t pc_next_pos(dungeon_t *d, pair_t dir);
+void place_pc(dungeon_t *d);
+uint32_t pc_in_room(dungeon_t *d, uint32_t room);
 
 #endif
