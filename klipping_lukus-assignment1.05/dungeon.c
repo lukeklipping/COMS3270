@@ -688,6 +688,30 @@ static int make_rooms(dungeon_t *d)
   return 0;
 }
 
+static void place_stairs(dungeon_t *d)
+{
+  pair_t p;
+  do
+  {
+    while ((p[dim_y] = rand_range(1, DUNGEON_Y - 2)) &&
+           (p[dim_x] = rand_range(1, DUNGEON_X - 2)) &&
+           ((mappair(p) < ter_floor) ||
+            (mappair(p) > ter_stairs)))
+      ;
+    mappair(p) = ter_stairs_down;
+  } while (rand_under(1, 3));
+  do
+  {
+    while ((p[dim_y] = rand_range(1, DUNGEON_Y - 2)) &&
+           (p[dim_x] = rand_range(1, DUNGEON_X - 2)) &&
+           ((mappair(p) < ter_floor) ||
+            (mappair(p) > ter_stairs)))
+
+      ;
+    mappair(p) = ter_stairs_up;
+  } while (rand_under(2, 4));
+}
+
 int gen_dungeon(dungeon_t *d)
 {
   do
@@ -695,103 +719,9 @@ int gen_dungeon(dungeon_t *d)
     make_rooms(d);
   } while (place_rooms(d));
   connect_rooms(d);
+  place_stairs(d);
 
   return 0;
-}
-
-void render_dungeon(dungeon_t *d)
-{
-  pair_t p;
-  move(0, 0);
-  clrtoeol();
-  int x, y, dx, dy, sx, sy;
-  dx = 0;
-  dy = 0;
-  sy = 0;
-  sx = 0;
-  y = d->pc.position[dim_y];
-  x = d->pc.position[dim_x];
-  if (x < 80)
-  {
-    dx = 80;
-    sx = 0;
-  }
-  else
-  {
-    dx = 160;
-    sx = 80;
-  }
-  if (y < 21)
-  {
-    dy = 21;
-    sy = 0;
-  }
-  if (y > 20 && y < 42)
-  {
-    dy = 42;
-    sy = 21;
-  }
-  if (y > 41 && y < 63)
-  {
-    dy = 63;
-    sy = 42;
-  }
-  if (y > 62 && y < 84)
-  {
-    dy = 84;
-    sy = 63;
-  }
-  if (y > 83 && y < 105)
-  {
-    dy = 105;
-    sy = 84;
-  }
-  int locx, locy;
-  locx = 0;
-  locy = 0;
-  mvprintw(0, 15, "Control Mode");
-  mvprintw(22, 33, "Roguelike 327");
-  for (p[dim_y] = sy; p[dim_y] < dy; p[dim_y]++, locy++)
-  {
-    for (p[dim_x] = sx; p[dim_x] < dx; p[dim_x]++, locx++)
-    {
-      if (charpair(p))
-      {
-        mvaddch(locy + 1, locx, d->character[p[dim_y]][p[dim_x]]->symbol);
-      }
-      else
-      {
-        switch (mappair(p))
-        {
-        case ter_wall:
-        case ter_wall_immutable:
-          mvaddch(locy + 1, locx, ' ');
-          break;
-        case ter_floor:
-        case ter_floor_room:
-          mvaddch(locy + 1, locx, '.');
-          break;
-        case ter_floor_hall:
-          mvaddch(locy + 1, locx, '#');
-          break;
-        case ter_debug:
-          mvaddch(locy + 1, locx, '*');
-          // fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
-          break;
-        case ter_stairs:
-        case ter_stairs_up:
-          mvaddch(locy + 1, locx, '<');
-          break;
-        case ter_stairs_down:
-          mvaddch(locy + 1, locx, '>');
-          break;
-        }
-      }
-    }
-    // putchar('\n');
-    locx = 0;
-  }
-  refresh();
 }
 
 void delete_dungeon(dungeon_t *d)
@@ -1270,21 +1200,21 @@ void new_dungeon(dungeon_t *d)
   config_pc(d);
   gen_monsters(d);
 }
-void look_mode(dungeon_t *d)
+
+/* ncurses render */
+void render_dungeon(dungeon_t *d)
 {
-  int x, y;
-  int ch;
   pair_t p;
   move(0, 0);
   clrtoeol();
-  mvprintw(0, 15, "Look Mode. Press ESC to escape...");
-  int dx, dy, sx, sy;
+  int x, y, dx, dy, sx, sy;
   dx = 0;
   dy = 0;
   sy = 0;
   sx = 0;
   y = d->pc.position[dim_y];
   x = d->pc.position[dim_x];
+  // horizontal boundaries
   if (x < 80)
   {
     dx = 80;
@@ -1295,6 +1225,8 @@ void look_mode(dungeon_t *d)
     dx = 160;
     sx = 80;
   }
+
+  // vertical boundaries
   if (y < 21)
   {
     dy = 21;
@@ -1321,82 +1253,48 @@ void look_mode(dungeon_t *d)
     sy = 84;
   }
   int locx, locy;
-
-  do
+  locx = 0;
+  locy = 0;
+  mvprintw(22, 33, "Roguelike 327");
+  for (p[dim_y] = sy; p[dim_y] < dy; p[dim_y]++, locy++)
   {
+    for (p[dim_x] = sx; p[dim_x] < dx; p[dim_x]++, locx++)
+    {
+      // prints monster symbol
+      if (charpair(p))
+      {
+        mvaddch(locy + 1, locx, d->character[p[dim_y]][p[dim_x]]->symbol);
+      }
+      else
+      {
+        // print terrain
+        switch (mappair(p))
+        {
+        case ter_wall:
+        case ter_wall_immutable:
+          mvaddch(locy + 1, locx, ' ');
+          break;
+        case ter_floor:
+        case ter_floor_room:
+          mvaddch(locy + 1, locx, '.');
+          break;
+        case ter_floor_hall:
+          mvaddch(locy + 1, locx, '#');
+          break;
+        case ter_debug:
+          mvaddch(locy + 1, locx, '*');
+          break;
+        case ter_stairs:
+        case ter_stairs_up:
+          mvaddch(locy + 1, locx, '<');
+          break;
+        case ter_stairs_down:
+          mvaddch(locy + 1, locx, '>');
+          break;
+        }
+      }
+    }
     locx = 0;
-    locy = 0;
-    for (p[dim_y] = sy; p[dim_y] < dy; p[dim_y]++, locy++)
-    {
-      for (p[dim_x] = sx; p[dim_x] < dx; p[dim_x]++, locx++)
-      {
-        if (charpair(p))
-        {
-          mvaddch(locy + 1, locx, d->character[p[dim_y]][p[dim_x]]->symbol);
-        }
-        else
-        {
-          switch (mappair(p))
-          {
-          case ter_wall:
-          case ter_wall_immutable:
-            mvaddch(locy + 1, locx, ' ');
-            break;
-          case ter_floor:
-          case ter_floor_room:
-            mvaddch(locy + 1, locx, '.');
-            break;
-          case ter_floor_hall:
-            mvaddch(locy + 1, locx, '#');
-            break;
-          case ter_debug:
-            mvaddch(locy + 1, locx, '*');
-            // fprintf(stderr, "Debug character at %d, %d\n", p[dim_y], p[dim_x]);
-            break;
-          case ter_stairs:
-          case ter_stairs_up:
-            mvaddch(locy + 1, locx, '<');
-            break;
-          case ter_stairs_down:
-            mvaddch(locy + 1, locx, '>');
-            break;
-          }
-        }
-      }
-      locx = 0;
-    }
-    refresh();
-    ch = getch();
-    switch (ch)
-    {
-    case KEY_DOWN:
-      if (dy < 104)
-      {
-        dy++;
-        sy++;
-      }
-      break;
-    case KEY_UP:
-      if (sy > 0)
-      {
-        dy--;
-        sy--;
-      }
-      break;
-    case KEY_LEFT:
-      if (sx > 0)
-      {
-        dx--;
-        sx--;
-      }
-      break;
-    case KEY_RIGHT:
-      if (sx < 159)
-      {
-        dx++;
-        sx++;
-      }
-      break;
-    }
-  } while (ch != 27);
+  }
+  refresh();
 }

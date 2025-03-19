@@ -19,3 +19,12 @@
                 Added code from prof code due to buggy 1.04, Modified to my code
 3/17/2025 8:00: changed whole code
                 decided to work off of prof code
+3/17/2025 8:30: pulled io from my old code
+3/17/2025 9:00: working on new print
+                old dungeon print doesnt work in ncurses
+3/18/2025 8:30: stairs not printing
+3/18/2025 8:45: found stairs bug
+                method wasnt in gen dungeon 
+3/18/2025 9:30: everything works
+                stairs work, movement, etc
+

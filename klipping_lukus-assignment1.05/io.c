@@ -24,8 +24,8 @@ void io_terminal_init(void)
 
 void io_display_list(dungeon_t *d)
 {
-    int max_y, max_x, y, x;
-    getmaxyx(stdscr, max_y, max_x); // Get terminal size
+    int max_y, y, x;
+    max_y = getmaxy(stdscr); // Get terminal size
 
     // terminal vals
     int list_start_y = 1;
@@ -41,8 +41,7 @@ void io_display_list(dungeon_t *d)
     do
     {
         clear();
-        mvprintw(0, list_start_x, "Monster List (%d total, %d x %d screen)",
-                 d->num_monsters, max_x, max_y);
+        mvprintw(0, list_start_x, "Deadly Monster List (%d total)", d->num_monsters);
 
         int displayed = 0; // Count monsters displayed
         for (y = 0; y < DUNGEON_Y && line < max_y; y++)
@@ -54,7 +53,7 @@ void io_display_list(dungeon_t *d)
                 {
                     continue;
                 }
-                // Check if this monster is within the scroll window
+                // check if this monster is within the scroll window
                 if (displayed >= scroll_offset)
                 {
                     int dis_y = pc_y - y;
@@ -67,9 +66,7 @@ void io_display_list(dungeon_t *d)
                     int abs_dis_y = dis_y >= 0 ? dis_y : -dis_y;
                     int abs_dis_x = dis_x >= 0 ? dis_x : -dis_x;
 
-                    mvprintw(list_start_y + displayed - scroll_offset, list_start_x,
-                             "%c, %d %s and %d %s",
-                             c->symbol, abs_dis_y, ns_dir, abs_dis_x, ew_dir);
+                    mvprintw(list_start_y + displayed - scroll_offset, list_start_x, "%c, %d %s and %d %s\n", c->symbol, abs_dis_y, ns_dir, abs_dis_x, ew_dir);
                 }
                 displayed++;
             }

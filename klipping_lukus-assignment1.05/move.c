@@ -174,12 +174,12 @@ uint32_t in_corner(dungeon_t *d, character_t *c)
 /* Move pc based on key presses */
 int move_pc(dungeon_t *d, uint32_t direction)
 {
-  pair_t next; // Changed from nextPos to next to match pair_t convention
+  pair_t next;
   int onStairs = 0;
 
   // Initialize next position using array notation to match pair_t
-  next[dim_x] = d->pc.position[dim_x]; // Changed PC to pc (lowercase) and used dim_x
-  next[dim_y] = d->pc.position[dim_y]; // Changed to dim_y
+  next[dim_x] = d->pc.position[dim_x];
+  next[dim_y] = d->pc.position[dim_y];
 
   switch (direction)
   {
@@ -224,18 +224,21 @@ int move_pc(dungeon_t *d, uint32_t direction)
   case '.':
     break;
   case '>':
-    if (mappair(d->pc.position) == '<')
+    if (mappair(d->pc.position) == ter_stairs_down)
     {
       onStairs = 1;
       new_dungeon(d);
     }
     break;
   case '<':
-    if (mappair(d->pc.position) == '<')
+    if (mappair(d->pc.position) == ter_stairs_up)
     {
       onStairs = 1;
       new_dungeon(d);
     }
+    break;
+  case 'm':
+    io_display_list(d);
     break;
   }
 

@@ -1,9 +1,9 @@
 #ifndef DUNGEON_H
 #define DUNGEON_H
 
+#include "character.h"
 #include "heap.h"
 #include "dims.h"
-#include "character.h"
 
 #define DUNGEON_X 80
 #define DUNGEON_Y 21
@@ -89,8 +89,6 @@ int read_dungeon(dungeon_t *d, char *file);
 int read_pgm(dungeon_t *d, char *pgm);
 void render_distance_map(dungeon_t *d);
 void render_tunnel_distance_map(dungeon_t *d);
-void render_hardness_map(dungeon_t *d);
-void render_movement_cost_map(dungeon_t *d);
 void new_dungeon(dungeon_t *d);
 
 #endif
