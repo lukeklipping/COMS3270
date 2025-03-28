@@ -1,16 +1,17 @@
+#include <iostream>
+#include <cstring>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ncurses.h>
 
 #include "dungeon.h"
 #include "pc.h"
 #include "npc.h"
-#include "io.h"
 #include "move.h"
 #include "utils.h"
+#include "io.h"
 
 const char *victory =
     "\n                                       o\n"
@@ -66,13 +67,11 @@ const char *tombstone =
 
 void usage(char *name)
 {
-  fprintf(stderr,
-          "Usage: %s [-r|--rand <seed>] [-l|--load [<file>]]\n"
-          "          [-s|--save [<file>]] [-i|--image <pgm file>]\n"
-          "          [-p|--pc <y> <x>] [-n|--nummon <count>]\n",
-          name);
+  std::cerr << "Usage: " << name << " [-r|--rand <seed>] [-l|--load [<file>]]\n"
+            << "          [-s|--save [<file>]] [-i|--image <pgm file>]\n"
+            << "          [-n|--nummon <count>]\n";
 
-  exit(-1);
+  std::exit(-1);
 }
 
 int main(int argc, char *argv[])
@@ -80,13 +79,12 @@ int main(int argc, char *argv[])
   dungeon_t d;
   time_t seed;
   struct timeval tv;
-  uint32_t i;
+  int i;
   uint32_t do_load, do_save, do_seed, do_image, do_save_seed, do_save_image;
   uint32_t long_arg;
   char *save_file;
   char *load_file;
   char *pgm_file;
-  uint32_t delay = 330000;
 
   /* Quiet a false positive from valgrind. */
   memset(&d, 0, sizeof(d));
@@ -125,15 +123,6 @@ int main(int argc, char *argv[])
         }
         switch (argv[i][1])
         {
-        case 'd':
-          if ((!long_arg && argv[i][2]) ||
-              (long_arg && strcmp(argv[i], "-delay")) ||
-              argc < ++i + 1 /* No more arguments */ ||
-              !sscanf(argv[i], "%u", &delay))
-          {
-            usage(argv[0]);
-          }
-          break;
         case 'n':
           if ((!long_arg && argv[i][2]) ||
               (long_arg && strcmp(argv[i], "-nummon")) ||
@@ -229,16 +218,9 @@ int main(int argc, char *argv[])
     seed = (tv.tv_usec ^ (tv.tv_sec << 20)) & 0xffffffff;
   }
 
-  if (!do_load && !do_image)
-  {
-    printf("Seed is %ld.\n", seed);
-  }
-  else
-  {
-    printf("Seed is %ld.  Dungeon loaded from file.\n", seed);
-  }
   srand(seed);
 
+  io_init_terminal();
   init_dungeon(&d);
 
   if (do_load)
@@ -258,28 +240,25 @@ int main(int argc, char *argv[])
   config_pc(&d);
   gen_monsters(&d);
 
-  render_dungeon(&d);
-
-  io_terminal_init();
-  char key;
-
-  do
+  io_display(&d);
+  if (!do_load && !do_image)
   {
-    render_dungeon(&d);
-    key = getch();
-    do_moves(&d, key);
-    if (!(pc_is_alive(&d) && dungeon_has_npcs(&d) && key != 'Q'))
-    {
-      endwin(); // resets terminal
-    }
-  } while (pc_is_alive(&d) && dungeon_has_npcs(&d) && key != 'Q');
+    io_queue_message("Seed is %u.", seed);
+  }
+  while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !d.quit)
+  {
+    do_moves(&d);
+  }
+  io_display(&d);
+
+  io_reset_terminal();
 
   if (do_save)
   {
     if (do_save_seed)
     {
       /* 10 bytes for number, plus dot, extention and null terminator. */
-      save_file = malloc(18);
+      save_file = (char *)malloc(18);
       sprintf(save_file, "%ld.rlg327", seed);
     }
     if (do_save_image)
@@ -292,7 +271,7 @@ int main(int argc, char *argv[])
       else
       {
         /* Extension of 3 characters longer than image extension + null. */
-        save_file = malloc(strlen(pgm_file) + 4);
+        save_file = (char *)malloc(strlen(pgm_file) + 4);
         strcpy(save_file, pgm_file);
         strcpy(strchr(save_file, '.') + 1, "rlg327");
       }
@@ -304,7 +283,7 @@ int main(int argc, char *argv[])
       free(save_file);
     }
   }
-  endwin();
+
   printf("%s", pc_is_alive(&d) ? victory : tombstone);
   printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
