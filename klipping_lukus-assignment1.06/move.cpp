@@ -15,106 +15,24 @@
 #include "event.h"
 #include "io.h"
 
-void do_combat(dungeon_t *d, character_t *atk, character_t *def)
+void do_combat(dungeon_t *d, character *atk, character *def)
 {
-  int can_see_atk, can_see_def;
-  const char *organs[] = {
-      "liver",              /*  0 */
-      "pancreas",           /*  1 */
-      "heart",              /*  2 */
-      "eye",                /*  3 */
-      "arm",                /*  4 */
-      "leg",                /*  5 */
-      "intestines",         /*  6 */
-      "gall bladder",       /*  7 */
-      "lungs",              /*  8 */
-      "hand",               /*  9 */
-      "foot",               /* 10 */
-      "spinal cord",        /* 11 */
-      "pituitary gland",    /* 12 */
-      "thyroid",            /* 13 */
-      "tongue",             /* 14 */
-      "bladder",            /* 15 */
-      "diaphram",           /* 16 */
-      "stomach",            /* 17 */
-      "pharynx",            /* 18 */
-      "esophagus",          /* 19 */
-      "trachea",            /* 20 */
-      "urethra",            /* 21 */
-      "spleen",             /* 22 */
-      "ganglia",            /* 23 */
-      "ear",                /* 24 */
-      "subcutaneous tissue" /* 25 */
-      "cerebellum",
-      /* 26 */        /* Brain parts begin here */
-      "hippocampus",  /* 27 */
-      "frontal lobe", /* 28 */
-      "brain",        /* 29 */
-  };
-  int part;
-
   if (def->alive)
   {
     def->alive = 0;
-    charpair(def->position) = NULL;
-
-    if (def != &d->pc)
+    if (def != d->thepc)
     {
       d->num_monsters--;
     }
-    else
-    {
-      if ((part = rand() % (sizeof(organs) / sizeof(organs[0]))) < 26)
-      {
-        io_queue_message("As the %c eats your %s, "
-                         "you wonder if there is an afterlife.",
-                         atk->symbol, organs[part]);
-      }
-      else
-      {
-        io_queue_message("Your last thoughts fade away as "
-                         "the %c eats your %s...",
-                         atk->symbol, organs[part]);
-      }
-      /* Queue an empty message, otherwise the game will not pause for *
-       * player to see above.                                          */
-      io_queue_message("");
-    }
-    atk->kills[kill_direct]++;
-    atk->kills[kill_avenged] += (def->kills[kill_direct] +
-                                 def->kills[kill_avenged]);
   }
 
-  if (atk == &d->pc)
+  if (atk == d->thepc)
   {
-    io_queue_message("You smite the %c!", def->symbol);
-  }
-
-  can_see_atk = can_see(d, &d->pc, atk);
-  can_see_def = can_see(d, &d->pc, def);
-
-  if (atk != &d->pc && def != &d->pc)
-  {
-    if (can_see_atk && !can_see_def)
-    {
-      io_queue_message("The %c callously murders some poor, "
-                       "defenseless creature.",
-                       atk->symbol);
-    }
-    if (can_see_def && !can_see_atk)
-    {
-      io_queue_message("Something kills the helpless %c.", def->symbol);
-    }
-    if (can_see_atk && can_see_def)
-    {
-      io_queue_message("You watch in abject horror as the %c "
-                       "gruesomely murders the %c!",
-                       atk->symbol, def->symbol);
-    }
+    io_queue_message("You smite the %c", def->symbol);
   }
 }
 
-void move_character(dungeon_t *d, character_t *c, pair_t next)
+void move_character(dungeon_t *d, character *c, pair_t next)
 {
   if (charpair(next) &&
       ((next[dim_y] != c->position[dim_y]) ||
@@ -126,15 +44,16 @@ void move_character(dungeon_t *d, character_t *c, pair_t next)
   {
     /* No character in new position. */
 
-    d->character[c->position[dim_y]][c->position[dim_x]] = NULL;
+    d->characters[c->position[dim_y]][c->position[dim_x]] = NULL;
     c->position[dim_y] = next[dim_y];
     c->position[dim_x] = next[dim_x];
-    d->character[c->position[dim_y]][c->position[dim_x]] = c;
+    d->characters[c->position[dim_y]][c->position[dim_x]] = c;
 
-    if (c == d->pc)
+    if (c == d->thepc)
     {
       // reset visi
-      pc_terrain_learn(c, d);
+      pc_reset_visible((pc *)c);
+      pc_terrain_see((pc *)c, d);
     }
   }
 }
@@ -165,16 +84,16 @@ void do_moves(dungeon_t *d)
     }
     else
     {
-      e->time = d->time + (1000 / d->pc.speed);
+      e->time = d->time + (1000 / d->thepc->speed);
     }
     e->sequence = 0;
-    e->c = &d->pc;
+    e->c = d->thepc;
     heap_insert(&d->events, e);
   }
 
   while (pc_is_alive(d) &&
          (e = (event_t *)heap_remove_min(&d->events)) &&
-         ((e->type != event_character_turn) || (e->c != &d->pc)))
+         ((e->type != event_character_turn) || (e->c != d->thepc)))
   {
     d->time = e->time;
     if (e->type == event_character_turn)
@@ -183,25 +102,25 @@ void do_moves(dungeon_t *d)
     }
     if (!c->alive)
     {
-      if (d->character[c->position[dim_y]][c->position[dim_x]] == c)
+      if (d->characters[c->position[dim_y]][c->position[dim_x]] == c)
       {
-        d->character[c->position[dim_y]][c->position[dim_x]] = NULL;
+        d->characters[c->position[dim_y]][c->position[dim_x]] = NULL;
       }
-      if (c != &d->pc)
+      if (c != d->thepc)
       {
         event_delete(e);
       }
       continue;
     }
 
-    npc_next_pos(d, c, next);
+    npc_next_pos(d, (npc *)c, next);
     move_character(d, c, next);
 
     heap_insert(&d->events, update_event(d, e, 1000 / c->speed));
   }
 
   io_display(d);
-  if (pc_is_alive(d) && e->c == &d->pc)
+  if (pc_is_alive(d) && e->c == d->thepc)
   {
     c = e->c;
     d->time = e->time;
@@ -287,8 +206,8 @@ uint32_t move_pc(dungeon_t *d, uint32_t dir)
       "You admire the engravings.",
       "Are you drunk?"};
 
-  next[dim_y] = d->pc.position[dim_y];
-  next[dim_x] = d->pc.position[dim_x];
+  next[dim_y] = d->thepc->position[dim_y];
+  next[dim_x] = d->thepc->position[dim_x];
 
   switch (dir)
   {
@@ -324,14 +243,14 @@ uint32_t move_pc(dungeon_t *d, uint32_t dir)
     next[dim_x]++;
     break;
   case '<':
-    if (mappair(d->pc.position) == ter_stairs_up)
+    if (mappair(d->thepc->position) == ter_stairs_up)
     {
       was_stairs = 1;
       new_dungeon_level(d, '<');
     }
     break;
   case '>':
-    if (mappair(d->pc.position) == ter_stairs_down)
+    if (mappair(d->thepc->position) == ter_stairs_down)
     {
       was_stairs = 1;
       new_dungeon_level(d, '>');
@@ -346,7 +265,7 @@ uint32_t move_pc(dungeon_t *d, uint32_t dir)
 
   if ((dir != '>') && (dir != '<') && (mappair(next) >= ter_floor))
   {
-    move_character(d, &d->pc, next);
+    move_character(d, d->thepc, next);
     dijkstra(d);
     dijkstra_tunnel(d);
 

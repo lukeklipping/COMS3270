@@ -5,10 +5,10 @@
 
 #include "dims.h"
 
-typedef struct dungeon dungeon_t;
+/*typedef struct dungeon dungeon_t;
 typedef struct npc npc_t;
 typedef struct pc pc_t;
-typedef struct dice_t dice_t;
+typedef struct dice_t dice_t;*/
 
 typedef enum kill_type
 {
@@ -39,8 +39,10 @@ typedef void character;
 
   uint32_t compare_characters_by_next_turn(const void *character1, const void *character2);
   uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t);
-  uint32_t can_see(dungeon_t *d, character_t *voyeur, character_t *exhibitionist);
-  void character_delete(void *c);
+  // uint32_t can_see(dungeon_t *d, character_t *voyeur, character_t *exhibitionist);
+  void character_delete(character *c);
+  int16_t get_x(const character *c);
+  int16_t get_y(const character *c);
 
 #ifdef __cplusplus
 }

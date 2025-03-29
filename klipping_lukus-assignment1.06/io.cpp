@@ -113,7 +113,7 @@ void io_display_tunnel(dungeon_t *d)
     {
         for (x = 0; x < DUNGEON_X; x++)
         {
-            if (charxy(x, y) == &d->pc)
+            if (charxy(x, y) == d->thepc)
             {
                 mvaddch(y + 1, x, charxy(x, y)->symbol);
             }
@@ -199,9 +199,9 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
     {
         for (x = 1; x < DUNGEON_X - 1; x++)
         {
-            if (d->character[y][x] && d->character[y][x] != &d->pc)
+            if (d->characters[y][x] && d->characters[y][x] != d->thepc)
             {
-                c[count++] = d->character[y][x];
+                c[count++] = d->characters[y][x];
             }
         }
     }
@@ -212,7 +212,7 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
 
     for (n = NULL, i = 0; i < count; i++)
     {
-        if (can_see(d, &d->pc, c[i]))
+        if (can_see(d, d->thepc->position, c[i]->position, 1))
         {
             n = c[i];
             break;
@@ -228,19 +228,24 @@ void io_display(dungeon_t *d)
 {
     uint32_t y, x;
     character_t *c;
+    uint8_t illum;
 
     clear();
     for (y = 0; y < 21; y++)
     {
         for (x = 0; x < 80; x++)
         {
-            if (d->character[y][x])
+            if ((illum = pc_visible(d->thepc, y, x)))
             {
-                mvaddch(y + 1, x, d->character[y][x]->symbol);
+                attron(A_BOLD);
+            }
+            if (d->characters[y][x] && can_see(d, d->thepc->position, d->characters[y][x]->position, 1))
+            {
+                mvaddch(y + 1, x, d->characters[y][x]->symbol);
             }
             else
             {
-                switch (mapxy(x, y))
+                switch (pc_terrain_known(d->thepc, y, x))
                 {
                 case ter_wall:
                 case ter_wall_immutable:
@@ -255,6 +260,9 @@ void io_display(dungeon_t *d)
                     break;
                 case ter_debug:
                     mvaddch(y + 1, x, '*');
+                    break;
+                case ter_unknown:
+                    mvaddch(y + 1, x, ' ');
                     break;
                 case ter_stairs_up:
                     mvaddch(y + 1, x, '<');
@@ -272,7 +280,7 @@ void io_display(dungeon_t *d)
     }
 
     mvprintw(23, 1, "PC position is (%2d,%2d).",
-             d->pc.position[dim_x], d->pc.position[dim_y]);
+             d->thepc->position[dim_x], d->thepc->position[dim_y]);
     mvprintw(22, 1, "%d known %s.", d->num_monsters,
              d->num_monsters > 1 ? "monsters" : "monster");
     mvprintw(22, 30, "Nearest visible monster: ");
@@ -281,10 +289,10 @@ void io_display(dungeon_t *d)
         attron(COLOR_PAIR(COLOR_RED));
         mvprintw(22, 55, "%c at %d %c by %d %c.",
                  c->symbol,
-                 abs(c->position[dim_y] - d->pc.position[dim_y]),
-                 ((c->position[dim_y] - d->pc.position[dim_y]) <= 0 ? 'N' : 'S'),
-                 abs(c->position[dim_x] - d->pc.position[dim_x]),
-                 ((c->position[dim_x] - d->pc.position[dim_x]) <= 0 ? 'W' : 'E'));
+                 abs(c->position[dim_y] - d->thepc->position[dim_y]),
+                 ((c->position[dim_y] - d->thepc->position[dim_y]) <= 0 ? 'N' : 'S'),
+                 abs(c->position[dim_x] - d->thepc->position[dim_x]),
+                 ((c->position[dim_x] - d->thepc->position[dim_x]) <= 0 ? 'W' : 'E'));
         attroff(COLOR_PAIR(COLOR_RED));
     }
     else
@@ -319,11 +327,11 @@ uint32_t io_teleport_pc(dungeon_t *d)
         dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
     } while (charpair(dest));
 
-    d->character[d->pc.position[dim_y]][d->pc.position[dim_x]] = NULL;
-    d->character[dest[dim_y]][dest[dim_x]] = &d->pc;
+    d->characters[d->thepc->position[dim_y]][d->thepc->position[dim_x]] = NULL;
+    d->characters[dest[dim_y]][dest[dim_x]] = d->thepc;
 
-    d->pc.position[dim_y] = dest[dim_y];
-    d->pc.position[dim_x] = dest[dim_x];
+    d->thepc->position[dim_y] = dest[dim_y];
+    d->thepc->position[dim_x] = dest[dim_x];
 
     if (mappair(dest) < ter_floor)
     {
@@ -422,10 +430,10 @@ static void io_list_monsters_display(dungeon_t *d,
         snprintf(s[i], 41, "%16s%c: %2d %s by %2d %s",
                  (c[i]->symbol == 'd' ? "A tenacious " : adjectives[rand() % (sizeof(adjectives) / sizeof(adjectives[0]))]),
                  c[i]->symbol,
-                 abs(c[i]->position[dim_y] - d->pc.position[dim_y]),
-                 ((c[i]->position[dim_y] - d->pc.position[dim_y]) <= 0 ? "North" : "South"),
-                 abs(c[i]->position[dim_x] - d->pc.position[dim_x]),
-                 ((c[i]->position[dim_x] - d->pc.position[dim_x]) <= 0 ? "West" : "East"));
+                 abs(c[i]->position[dim_y] - d->thepc->position[dim_y]),
+                 ((c[i]->position[dim_y] - d->thepc->position[dim_y]) <= 0 ? "North" : "South"),
+                 abs(c[i]->position[dim_x] - d->thepc->position[dim_x]),
+                 ((c[i]->position[dim_x] - d->thepc->position[dim_x]) <= 0 ? "West" : "East"));
         if (count <= 13)
         {
             /* Handle the non-scrolling case right here. *
@@ -464,9 +472,9 @@ static void io_list_monsters(dungeon_t *d)
     {
         for (x = 1; x < DUNGEON_X - 1; x++)
         {
-            if (d->character[y][x] && d->character[y][x] != &d->pc)
+            if (d->characters[y][x] && d->characters[y][x] != d->thepc)
             {
-                c[count++] = d->character[y][x];
+                c[count++] = d->characters[y][x];
             }
         }
     }

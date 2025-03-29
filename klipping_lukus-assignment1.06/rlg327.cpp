@@ -283,14 +283,19 @@ int main(int argc, char *argv[])
       free(save_file);
     }
   }
+  std::cout << (pc_is_alive(&d) ? victory : tombstone);
 
-  printf("%s", pc_is_alive(&d) ? victory : tombstone);
-  printf("You defended your life in the face of %u deadly beasts.\n"
+  // printf("%s", pc_is_alive(&d) ? victory : tombstone);
+  /*printf("You defended your life in the face of %u deadly beasts.\n"
          "You avenged the cruel and untimely murders of %u "
          "peaceful dungeon residents.\n",
-         d.pc.kills[kill_direct], d.pc.kills[kill_avenged]);
+         d->pc->kills[kill_direct], d->pc->kills[kill_avenged]);*/
 
-  pc_delete(d.pc.pc);
+  if (pc_is_alive(&d))
+  {
+    character_delete(d.thepc);
+    d.thepc = NULL;
+  }
 
   delete_dungeon(&d);
 

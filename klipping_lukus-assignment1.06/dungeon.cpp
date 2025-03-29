@@ -728,7 +728,7 @@ void delete_dungeon(dungeon_t *d)
 {
   free(d->rooms);
   heap_delete(&d->events);
-  memset(d->character, 0, sizeof(d->character));
+  memset(d->characters, 0, sizeof(d->characters));
 }
 
 void init_dungeon(dungeon_t *d)
@@ -1100,7 +1100,7 @@ int read_pgm(dungeon_t *d, char *pgm)
 
   return 0;
 }
-
+/*
 void render_distance_map(dungeon_t *d)
 {
   pair_t p;
@@ -1109,8 +1109,8 @@ void render_distance_map(dungeon_t *d)
   {
     for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++)
     {
-      if (p[dim_x] == d->pc.position[dim_x] &&
-          p[dim_y] == d->pc.position[dim_y])
+      if (p[dim_x] == d->thepc->position[dim_x] &&
+          p[dim_y] == d->thepc->position[dim_y])
       {
         putchar('@');
       }
@@ -1153,8 +1153,8 @@ void render_tunnel_distance_map(dungeon_t *d)
   {
     for (p[dim_x] = 0; p[dim_x] < DUNGEON_X; p[dim_x]++)
     {
-      if (p[dim_x] == d->pc.position[dim_x] &&
-          p[dim_y] == d->pc.position[dim_y])
+      if (p[dim_x] == d->thepc->position[dim_x] &&
+          p[dim_y] == d->thepc->position[dim_y])
       {
         putchar('@');
       }
@@ -1187,7 +1187,7 @@ void render_tunnel_distance_map(dungeon_t *d)
     }
     putchar('\n');
   }
-}
+}*/
 void new_dungeon(dungeon_t *d)
 {
   uint32_t sequence_number;
@@ -1212,8 +1212,8 @@ void render_dungeon(dungeon_t *d)
   dy = 0;
   sy = 0;
   sx = 0;
-  y = d->pc.position[dim_y];
-  x = d->pc.position[dim_x];
+  y = d->thepc->position[dim_y];
+  x = d->thepc->position[dim_x];
   // horizontal boundaries
   if (x < 80)
   {
@@ -1263,7 +1263,7 @@ void render_dungeon(dungeon_t *d)
       // prints monster symbol
       if (charpair(p))
       {
-        mvaddch(locy + 1, locx, d->character[p[dim_y]][p[dim_x]]->symbol);
+        mvaddch(locy + 1, locx, d->characters[p[dim_y]][p[dim_x]]->symbol);
       }
       else
       {
@@ -1272,6 +1272,9 @@ void render_dungeon(dungeon_t *d)
         {
         case ter_wall:
         case ter_wall_immutable:
+          mvaddch(locy + 1, locx, ' ');
+          break;
+        case ter_unknown:
           mvaddch(locy + 1, locx, ' ');
           break;
         case ter_floor:

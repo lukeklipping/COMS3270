@@ -7,21 +7,10 @@
 #include "dungeon.h"
 #include "utils.h"
 
-void character_delete(void *v)
+void character_delete(character *v)
 {
   /* The PC is never malloc()ed anymore, do don't attempt to free it here. */
-  character_t *c;
-
-  if (v)
-  {
-    c = (character_t *)v;
-
-    if (c->npc)
-    {
-      npc_delete(c->npc);
-      free(c);
-    }
-  }
+  delete v;
 }
 
 uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC)
@@ -86,6 +75,10 @@ uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC
     b = c - del[dim_x];
     for (i = 0; i <= del[dim_x]; i++)
     {
+      if (isPC)
+      { // adds learn terrain
+        pc_terrain_learn(d->thepc, first, mappair(first));
+      }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_x]))
       {
         return 0;
@@ -111,6 +104,10 @@ uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC
     b = c - del[dim_y];
     for (i = 0; i <= del[dim_y]; i++)
     {
+      if (isPC)
+      { // adds learn terrain
+        pc_terrain_learn(d->thepc, first, mappair(first));
+      }
       if ((mappair(first) < ter_floor) && i && (i != del[dim_y]))
       {
         return 0;
@@ -131,4 +128,13 @@ uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC
   }
 
   return 1;
+}
+
+int16_t get_x(const character *c)
+{
+  return c->position[dim_x];
+}
+int16_t get_y(const character *c)
+{
+  return c->position[dim_y];
 }

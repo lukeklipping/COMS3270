@@ -29,8 +29,8 @@
 #define mapxy(x, y) (d->map[y][x])
 #define hardnesspair(pair) (d->hardness[pair[dim_y]][pair[dim_x]])
 #define hardnessxy(x, y) (d->hardness[y][x])
-#define charpair(pair) (d->character[pair[dim_y]][pair[dim_x]])
-#define charxy(x, y) (d->character[y][x])
+#define charpair(pair) (d->characters[pair[dim_y]][pair[dim_x]])
+#define charxy(x, y) (d->characters[y][x])
 
 typedef enum __attribute__((__packed__)) terrain_type
 {
@@ -52,6 +52,13 @@ typedef struct room
   pair_t size;
 } room_t;
 
+#ifdef __cplusplus
+class pc;
+#else
+
+typedef void pc;
+#endif
+
 typedef struct dungeon
 {
   uint32_t num_rooms;
@@ -68,8 +75,8 @@ typedef struct dungeon
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   uint8_t pc_distance[DUNGEON_Y][DUNGEON_X];
   uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
-  character_t *character[DUNGEON_Y][DUNGEON_X];
-  pc_t pc;
+  character *characters[DUNGEON_Y][DUNGEON_X];
+  pc *thepc;
   heap_t events;
   uint16_t num_monsters;
   uint16_t max_monsters;
