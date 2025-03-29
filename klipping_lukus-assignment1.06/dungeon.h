@@ -14,7 +14,9 @@
 #define ROOM_MAX_X 20
 #define ROOM_MAX_Y 15
 #define VISUAL_RANGE 15
+#define NPC_VISUAL_RANGE 30
 #define PC_SPEED 10
+#define PC_VISUAL 20
 #define NPC_MIN_SPEED 5
 #define NPC_MAX_SPEED 20
 #define MAX_MONSTERS 15
@@ -33,6 +35,7 @@
 typedef enum __attribute__((__packed__)) terrain_type
 {
   ter_debug,
+  ter_unknown, // for new seen
   ter_wall,
   ter_wall_immutable,
   ter_floor,
@@ -66,7 +69,7 @@ typedef struct dungeon
   uint8_t pc_distance[DUNGEON_Y][DUNGEON_X];
   uint8_t pc_tunnel[DUNGEON_Y][DUNGEON_X];
   character_t *character[DUNGEON_Y][DUNGEON_X];
-  character_t pc;
+  pc_t pc;
   heap_t events;
   uint16_t num_monsters;
   uint16_t max_monsters;

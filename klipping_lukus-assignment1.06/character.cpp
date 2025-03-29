@@ -24,7 +24,7 @@ void character_delete(void *v)
   }
 }
 
-uint32_t can_see(dungeon_t *d, character_t *voyeur, character_t *exhibitionist)
+uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC)
 {
   /* Application of Bresenham's Line Drawing Algorithm.  If we can draw *
    * a line from v to e without intersecting any walls, then v can see  *
@@ -37,14 +37,17 @@ uint32_t can_see(dungeon_t *d, character_t *voyeur, character_t *exhibitionist)
   pair_t first, second;
   pair_t del, f;
   int16_t a, b, c, i;
+  int16_t vis;
 
-  first[dim_x] = voyeur->position[dim_x];
-  first[dim_y] = voyeur->position[dim_y];
-  second[dim_x] = exhibitionist->position[dim_x];
-  second[dim_y] = exhibitionist->position[dim_y];
+  vis = isPC ? PC_VISUAL : NPC_VISUAL_RANGE;
 
-  if ((abs(first[dim_x] - second[dim_x]) > VISUAL_RANGE) ||
-      (abs(first[dim_y] - second[dim_y]) > VISUAL_RANGE))
+  first[dim_x] = voyeur[dim_x];
+  first[dim_y] = voyeur[dim_y];
+  second[dim_x] = exhibitionist[dim_x];
+  second[dim_y] = exhibitionist[dim_y];
+
+  if ((abs(first[dim_x] - second[dim_x]) > vis) ||
+      (abs(first[dim_y] - second[dim_y]) > vis))
   {
     return 0;
   }

@@ -222,3 +222,61 @@ uint32_t pc_in_room(dungeon_t *d, uint32_t room)
 
   return 0;
 }
+
+terrain_type_t pc_terrain_known(pc *p, int y, int x)
+{
+  return p->terrain_known[y][x];
+}
+
+int32_t pc_visible(pc *p, int x, int y)
+{
+  return p->visible[y][x];
+}
+
+void pc_terrain_init(pc *p)
+{
+  int y, x;
+  for (y = 0; y < DUNGEON_Y; y++)
+  {
+    for (x = 0; x < DUNGEON_X; x++)
+    {
+      p->terrain_known[y][x] = ter_unknown;
+      p->visible[y][x] = 0;
+    }
+  }
+}
+
+void pc_terrain_learn(pc *p, dungeon_t *d)
+{
+  pair_t point;
+  int ymin, ymax, xmin, xmax;
+
+  ymin = p->position[dim_y] - PC_VISUAL;
+  if (ymin < 0)
+  {
+    ymin = 0;
+  }
+  ymax = p->position[dim_y] + PC_VISUAL;
+  if (ymax > DUNGEON_Y - 1) // account for boundary
+  {
+    ymax = DUNGEON_Y - 1;
+  }
+
+  // x
+  xmin = p->position[dim_x] - PC_VISUAL;
+  if (xmin < 0)
+  {
+    xmin = 0;
+  }
+  xmax = p->position[dim_x] + PC_VISUAL;
+  if (xmax > DUNGEON_X - 1) // account for boundary
+  {
+    xmax = DUNGEON_X - 1;
+  }
+
+  for (point[dim_y] = ymin; point[dim_y] <= ymax; point[dim_y]++)
+  { // check vert bounds
+    point[dim_x] = xmin;
+    can_see(d, p->position, );
+  }
+}

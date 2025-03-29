@@ -130,6 +130,12 @@ void move_character(dungeon_t *d, character_t *c, pair_t next)
     c->position[dim_y] = next[dim_y];
     c->position[dim_x] = next[dim_x];
     d->character[c->position[dim_y]][c->position[dim_x]] = c;
+
+    if (c == d->pc)
+    {
+      // reset visi
+      pc_terrain_learn(c, d);
+    }
   }
 }
 

@@ -602,6 +602,10 @@ void io_handle_input(dungeon_t *d)
             io_queue_message("Have fun!  And happy printing!");
             fail_code = 0;
             break;
+        case 'f':
+            // fog of war
+
+            break;
         default:
             /* Also not in the spec.  It's not always easy to figure out what *
              * key code corresponds with a given keystroke.  Print out any    *
