@@ -89,6 +89,7 @@ typedef struct dungeon
   uint32_t time;
   uint32_t is_new;
   uint32_t quit;
+  uint32_t fog_enabled;
 } dungeon_t;
 
 void init_dungeon(dungeon_t *d);

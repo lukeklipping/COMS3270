@@ -8,5 +8,6 @@ void io_reset_terminal(void);
 void io_display(dungeon_t *d);
 void io_handle_input(dungeon_t *d);
 void io_queue_message(const char *format, ...);
+void io_no_fog(dungeon_t *d);
 
 #endif

@@ -9,8 +9,17 @@
 
 void character_delete(character *v)
 {
-  /* The PC is never malloc()ed anymore, do don't attempt to free it here. */
+
   delete v;
+}
+
+int16_t get_x(const character *c)
+{
+  return c->position[dim_x];
+}
+int16_t get_y(const character *c)
+{
+  return c->position[dim_y];
 }
 
 uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC)
@@ -128,13 +137,4 @@ uint32_t can_see(dungeon_t *d, pair_t voyeur, pair_t exhibitionist, uint8_t isPC
   }
 
   return 1;
-}
-
-int16_t get_x(const character *c)
-{
-  return c->position[dim_x];
-}
-int16_t get_y(const character *c)
-{
-  return c->position[dim_y];
 }

@@ -27,6 +27,7 @@ public:
   uint32_t alive;
   uint32_t sequence_number;
   uint32_t kills[num_kill_types];
+  virtual ~character() = default; // destruct
 };
 
 extern "C"

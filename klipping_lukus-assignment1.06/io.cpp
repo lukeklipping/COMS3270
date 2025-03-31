@@ -226,7 +226,7 @@ static character_t *io_nearest_visible_monster(dungeon_t *d)
 
 void io_display(dungeon_t *d)
 {
-    uint32_t y, x;
+    int8_t y, x;
     character_t *c;
     uint8_t illum;
 
@@ -235,20 +235,33 @@ void io_display(dungeon_t *d)
     {
         for (x = 0; x < 80; x++)
         {
-            if ((illum = pc_visible(d->thepc, y, x)))
+            // int visible = (pc_visible(d->thepc, y, x) && can_see(d, d->thepc->position, (pair_t){x, y}, 1));
+            if ((illum = pc_visible(d->thepc, y, x)) && d->fog_enabled)
             {
                 attron(A_BOLD);
             }
-            if (d->characters[y][x] && can_see(d, d->thepc->position, d->characters[y][x]->position, 1))
+            /*if (y == d->thepc->position[dim_y] && x == d->thepc->position[dim_x])
+            {
+                mvaddch(y + 1, x, '@'); // Force PC symbol
+            }*/
+            if (d->characters[y][x] && can_see(d, d->thepc->position, d->characters[y][x]->position, 1) && d->fog_enabled)
             {
                 mvaddch(y + 1, x, d->characters[y][x]->symbol);
             }
-            else
+            else if (d->characters[y][x] && !d->fog_enabled)
             {
-                switch (pc_terrain_known(d->thepc, y, x))
+                mvaddch(y + 1, x, d->characters[y][x]->symbol);
+            }
+            else if (!d->fog_enabled || pc_terrain_known(d->thepc, y, x) != ter_unknown)
+            {
+                terrain_type_t ter = !d->fog_enabled ? mapxy(x, y) : pc_terrain_known(d->thepc, y, x);
+                switch (ter)
                 {
                 case ter_wall:
                 case ter_wall_immutable:
+                    mvaddch(y + 1, x, ' ');
+                    break;
+                case ter_unknown:
                     mvaddch(y + 1, x, ' ');
                     break;
                 case ter_floor:
@@ -261,9 +274,7 @@ void io_display(dungeon_t *d)
                 case ter_debug:
                     mvaddch(y + 1, x, '*');
                     break;
-                case ter_unknown:
-                    mvaddch(y + 1, x, ' ');
-                    break;
+
                 case ter_stairs_up:
                     mvaddch(y + 1, x, '<');
                     break;
@@ -276,6 +287,14 @@ void io_display(dungeon_t *d)
                     mvaddch(y + 1, x, '0');
                 }
             }
+            else
+            {
+                mvaddch(y + 1, x, ' '); // Explicitly draw space when hidden by fog
+            }
+        }
+        if (illum && d->fog_enabled)
+        {
+            attroff(A_BOLD);
         }
     }
 
@@ -612,6 +631,9 @@ void io_handle_input(dungeon_t *d)
             break;
         case 'f':
             // fog of war
+            d->fog_enabled = !d->fog_enabled;
+            io_display(d);
+            fail_code = 1;
 
             break;
         default:

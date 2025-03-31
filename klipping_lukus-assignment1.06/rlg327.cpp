@@ -294,7 +294,6 @@ int main(int argc, char *argv[])
   if (pc_is_alive(&d))
   {
     character_delete(d.thepc);
-    d.thepc = NULL;
   }
 
   delete_dungeon(&d);
