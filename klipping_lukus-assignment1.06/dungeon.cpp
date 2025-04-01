@@ -583,6 +583,7 @@ static int empty_dungeon(dungeon_t *d)
     }
   }
   d->rooms = NULL;
+  d->is_new = 1;
   return 0;
 }
 
@@ -720,6 +721,7 @@ int gen_dungeon(dungeon_t *d)
   } while (place_rooms(d));
   connect_rooms(d);
   place_stairs(d);
+  d->fog_enabled = 0;
 
   return 0;
 }

@@ -43,6 +43,7 @@ void io_init_terminal(void)
 void io_reset_terminal(void)
 {
     endwin();
+    // delwin(stdscr);
 
     while (io_head)
     {
@@ -292,7 +293,7 @@ void io_display(dungeon_t *d)
                 mvaddch(y + 1, x, ' '); // Explicitly draw space when hidden by fog
             }
         }
-        if (illum && d->fog_enabled)
+        if (illum)
         {
             attroff(A_BOLD);
         }

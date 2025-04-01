@@ -53,8 +53,8 @@ void gen_monsters(dungeon_t *d)
   for (i = 0; i < d->num_monsters; i++)
   {
     // m = (npc *)malloc(sizeof(*m));
-    // memset(m, 0, sizeof(*m));
     m = new npc;
+    memset(m, 0, sizeof(*m));
 
     do
     {
@@ -68,7 +68,7 @@ void gen_monsters(dungeon_t *d)
     } while (d->characters[p[dim_y]][p[dim_x]]);
     m->position[dim_y] = p[dim_y];
     m->position[dim_x] = p[dim_x];
-    // d->characters[p[dim_y]][p[dim_x]] = m;
+    d->characters[p[dim_y]][p[dim_x]] = m;
     m->speed = rand_range(NPC_MIN_SPEED, NPC_MAX_SPEED);
     m->alive = 1;
     m->sequence_number = ++d->character_sequence_number;
@@ -78,6 +78,8 @@ void gen_monsters(dungeon_t *d)
     /*    m->npc->characteristics = 0xf;*/
     m->symbol = symbol[m->characteristics];
     m->have_seen_pc = 0;
+    m->pc_last_known_position[dim_y] = 0;
+    m->pc_last_known_position[dim_x] = 0;
     m->kills[kill_direct] = m->kills[kill_avenged] = 0;
 
     d->characters[p[dim_y]][p[dim_x]] = m;

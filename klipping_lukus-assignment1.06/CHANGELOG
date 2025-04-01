@@ -1,30 +1,8 @@
-3/07/2025 9:07: Beginning work on 1.05
-3/07/2025 9:34: Making pc.c and pc.h
-                adding to makefile
-3/07/2025 9:57: organizing code
-3/07/2025 10:15: New move.c and move.h
-                for determining character movement
-3/07/2025 10:20: new macros
-                mappair and charpair from prof code
-3/07/2025 10:35: added move_pc
-                switch statement keybinds
-3/07/2025 10:50: added new dungeon method
-                added a generate dungeon whole floor for stairs
-3/07/2025 11:08: moving methods
-                moving eventSimUpdate to move.c. 
-                Works better within this code
-3/07/2025 11:30: new io
-                to organize ncurses screen init
-3/08/2025 2:30: Added in prof code     
-                Added code from prof code due to buggy 1.04, Modified to my code
-3/17/2025 8:00: changed whole code
-                decided to work off of prof code
-3/17/2025 8:30: pulled io from my old code
-3/17/2025 9:00: working on new print
-                old dungeon print doesnt work in ncurses
-3/18/2025 8:30: stairs not printing
-3/18/2025 8:45: found stairs bug
-                method wasnt in gen dungeon 
-3/18/2025 9:30: everything works
-                stairs work, movement, etc
-
+3/26/2025 9:07: Beginning work on 1.06
+3/27/2025 5:30: working on c++ port
+3/28/2025 11:30: c++ port finished
+3/29/2025 1:30: working on fog
+3/29/2025 6:30: fog finished
+4/01/2025 12:00: working on teleport
+4/01/2025 2:00: teleport done
+4/01/2025 2:00: everything works mostly, turning

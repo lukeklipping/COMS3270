@@ -17,18 +17,51 @@
 
 void do_combat(dungeon_t *d, character *atk, character *def)
 {
+  int can_see_atk, can_see_def;
+
   if (def->alive)
   {
     def->alive = 0;
+    charpair(def->position) = NULL;
+
     if (def != d->thepc)
     {
       d->num_monsters--;
     }
   }
+  atk->kills[kill_direct]++;
+  atk->kills[kill_avenged] += (def->kills[kill_direct] +
+                               def->kills[kill_avenged]);
 
   if (atk == d->thepc)
   {
     io_queue_message("You smite the %c", def->symbol);
+    can_see_atk = can_see(d, d->thepc->position, atk->position, 1);
+  }
+  else
+  {
+    can_see_atk = can_see(d, d->thepc->position, atk->position, 0);
+  }
+  can_see_def = can_see(d, d->thepc->position, def->position, 0);
+
+  if (atk != d->thepc && def != d->thepc)
+  {
+    if (can_see_atk && !can_see_def)
+    {
+      io_queue_message("The %c callously murders some poor, "
+                       "defenseless creature.",
+                       atk->symbol);
+    }
+    if (can_see_def && !can_see_atk)
+    {
+      io_queue_message("Something kills the helpless %c.", def->symbol);
+    }
+    if (can_see_atk && can_see_def)
+    {
+      io_queue_message("You watch in abject horror as the %c "
+                       "gruesomely murders the %c!",
+                       atk->symbol, def->symbol);
+    }
   }
 }
 
