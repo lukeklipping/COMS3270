@@ -68,7 +68,7 @@ void gen_monsters(dungeon_t *d)
     } while (d->characters[p[dim_y]][p[dim_x]]);
     m->position[dim_y] = p[dim_y];
     m->position[dim_x] = p[dim_x];
-    d->characters[p[dim_y]][p[dim_x]] = m;
+    // d->characters[p[dim_y]][p[dim_x]] = m;
     m->speed = rand_range(NPC_MIN_SPEED, NPC_MAX_SPEED);
     m->alive = 1;
     m->sequence_number = ++d->character_sequence_number;

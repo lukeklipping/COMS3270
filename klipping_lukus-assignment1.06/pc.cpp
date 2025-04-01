@@ -8,14 +8,6 @@
 #include "move.h"
 #include "path.h"
 
-/*void pc_delete(pc_t *pc)
-{
-  if (pc)
-  {
-    free(pc);
-  }
-}*/
-
 uint32_t pc_is_alive(dungeon_t *d)
 {
   return d->thepc->alive;

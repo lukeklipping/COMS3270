@@ -337,31 +337,127 @@ void io_display_monster_list(dungeon_t *d)
 
 uint32_t io_teleport_pc(dungeon_t *d)
 {
-    /* Just for fun. */
-    pair_t dest;
+    pair_t cursor;
+    int key;
+    int c;
 
-    do
+    mvprintw(0, 0, "Teleport Mode: Hit esc to continue!");
+    cursor[dim_x] = d->thepc->position[dim_x];
+    cursor[dim_y] = d->thepc->position[dim_y];
+
+    mvaddch(cursor[dim_y] + 1, cursor[dim_x], '*');
+    refresh();
+
+    while ((key = getch()) != 'g' && key != 'r')
     {
-        dest[dim_x] = rand_range(1, DUNGEON_X - 2);
-        dest[dim_y] = rand_range(1, DUNGEON_Y - 2);
-    } while (charpair(dest));
+        if (charpair(cursor))
+        {
+            c = charpair(cursor)->symbol;
+        }
+        else
+        {
+            switch (mappair(cursor))
+            {
+            case ter_wall:
+            case ter_wall_immutable:
+                c = ' ';
+                break;
+            case ter_floor:
+            case ter_floor_room:
+                c = '.';
+                break;
+            case ter_floor_hall:
+                c = '#';
+                break;
+            case ter_debug:
+                c = '*';
+                break;
+            case ter_stairs_up:
+                c = '<';
+                break;
+            case ter_stairs_down:
+                c = '>';
+                break;
+            default:
+                break;
+            }
+        }
 
-    d->characters[d->thepc->position[dim_y]][d->thepc->position[dim_x]] = NULL;
-    d->characters[dest[dim_y]][dest[dim_x]] = d->thepc;
+        mvaddch(cursor[dim_y] + 1, cursor[dim_x], c);
 
-    d->thepc->position[dim_y] = dest[dim_y];
-    d->thepc->position[dim_x] = dest[dim_x];
+        switch (key)
+        {
+        case '8':
+        case 'k':
+        case KEY_UP:
+            if (cursor[dim_y] > 1)
+            {
+                cursor[dim_y]--;
+            }
 
-    if (mappair(dest) < ter_floor)
-    {
-        mappair(dest) = ter_floor;
+            break;
+        case '6':
+        case 'l':
+        case KEY_RIGHT:
+            if (cursor[dim_x] < DUNGEON_X - 2)
+            {
+                cursor[dim_x]++;
+            }
+            break;
+        case '2':
+        case 'j':
+        case KEY_DOWN:
+            if (cursor[dim_y] < DUNGEON_Y - 2)
+            {
+                cursor[dim_y]++;
+            }
+            break;
+        case '4':
+        case 'h':
+        case KEY_LEFT:
+            if (cursor[dim_x] > 1)
+            {
+                cursor[dim_x]--;
+            }
+            break;
+        default:
+            mvprintw(0, 0, "Unbound key in teleport mode: %#o ", key);
+            break;
+        }
+        mvaddch(cursor[dim_y] + 1, cursor[dim_x], '*');
+        refresh();
     }
 
+    if (key == 'r')
+    {
+        do
+        {
+            cursor[dim_x] = rand_range(1, DUNGEON_X - 2);
+            cursor[dim_y] = rand_range(1, DUNGEON_Y - 2);
+        } while (charpair(cursor) || mappair(cursor) < ter_floor);
+    }
+
+    if (charpair(cursor) && charpair(cursor) != d->thepc)
+    {
+        io_queue_message("Teleport failed.  Destination occupied.");
+    }
+    else
+    {
+        d->characters[d->thepc->position[dim_y]][d->thepc->position[dim_x]] = NULL;
+        // new
+        d->characters[cursor[dim_y]][cursor[dim_x]] = d->thepc;
+        d->thepc->position[dim_y] = cursor[dim_y];
+        d->thepc->position[dim_x] = cursor[dim_x];
+    }
+
+    pc_terrain_see(d->thepc, d);
     dijkstra(d);
     dijkstra_tunnel(d);
+    io_display(d);
 
     return 0;
 }
+
 /* Adjectives to describe our monsters */
 static const char *adjectives[] = {
     "A menacing ",
@@ -602,7 +698,8 @@ void io_handle_input(dungeon_t *d)
         case 'g':
             /* Teleport the PC to a random place in the dungeon.              */
             io_teleport_pc(d);
-            fail_code = 0;
+            fail_code = 1;
+
             break;
         case 'm':
             io_list_monsters(d);

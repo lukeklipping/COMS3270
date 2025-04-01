@@ -9,7 +9,6 @@
 
 void character_delete(character *v)
 {
-
   delete v;
 }
 
