@@ -1,0 +1,16 @@
+fstream
+
+i.peek()
+    peek character
+
+i.getline()
+std::getline(istream &. std::string &, char delim)
+
+*** operator>> ()
+skips leading whitespace, then reads until next whitespace
+
+** stringstream
+    similar to java stringbuilder, use << to build strings. use str() to reaturn a reference to a string
+
+CONTAINERS
+***
