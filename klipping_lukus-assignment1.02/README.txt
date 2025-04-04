@@ -8,4 +8,4 @@ New methods
     when it is in the same directory as the program. My code also saves and loads when "./dungeon 
     --save" and "./dungeon --load" from the rlg directory under dungeon.rlg327. I can save a file under the 
     name to the rlg directory, but cannot load it directly from that directory. Although it will load it as
-    "./dungeon --load test.rlg327" from its own directory.
+    "./dungeon --load test.rlg327" from its own directory

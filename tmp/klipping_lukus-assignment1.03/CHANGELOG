@@ -1,0 +1,47 @@
+2/13/2025 2:00: changed dungeon[][] into dungeon_t
+                added d->map to all functions
+2/13/2025 2:20: added new files 
+                heap.h and heap.c for path finding out of prof code
+2/13/2025 3:00: add djikstra_tunnel()
+                for tunneling monsters pathfinding
+2/13/2025 3:16: Added djikstrs_non_tunnel()
+                for non tunneling pathfinding
+2/14/2025 1:00: Working on djikstra algo
+                decided that non tunnel is easier to work with first
+2/14/2025 1:05: Basing algo off of professors corridor djikstra
+2/14/2025 1:30: Created delete_dungeon()
+                helper method to make cleaner in main(), frees room array
+2/14/2025 1:45: made tunnel and non tunnel arrays
+                for path arrays
+2/14/2025 2:00: Put hardness array into dungeon_t
+                makes it easier and more secure than global variable like before
+2/14/2025 3:00: Djikstra progress
+                Algorithm must check all 8 neighbors of surrounding cell.
+2/14/2025 4:00: continuing debugging of algorithm
+2/14/2025 4:45: Made comparators for tunnel and non tunnel
+                For heap init. Based off of corridor comparator and what we learned
+                in class during insertion sort.
+2/14/2025 5:50: algo believed to be working, creating print map function 
+2/14/2025 6:00: map function for non tunnel made
+2/16/2025 4:00: working on tunnel
+                only difference is the hardness calculation, seems simple
+2/16/2025 4:45: more tunnel work
+                tunnel algo includes all cells that are not immutable
+2/16/2025 5:17: tunnel belived to be finished
+2/16/2025 6:00: made tunnel path map
+                I think its working correctly
+2/18/2025 3:00: Believed to be done
+                The online class demo helped a lot to determine if correct or not
+                Commenting in new methods and documenting what each part does.
+                Will turn in soon. Extension on assignment also.
+2/19/2025 1:00: working on ReadMe
+2/19/2025 1:15: README done
+                getting ready to turn in
+
+
+
+
+
+
+
+

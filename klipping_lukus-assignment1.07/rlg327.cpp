@@ -195,13 +195,75 @@ bool parse_desc(std::string &d, std::ifstream &rf, const std::string &line)
   return false;
 }
 
-bool parse_speed(std::string &s, const std::string &line)
+bool parse_speed(std::string &s, const std::string &line, dice &d)
 {
+  int base, number, sides;
   if (line.rfind("SPEED", 0) == 0)
   {
-    s = trim(line.substr(5));
+    std::string speed_string = trim(line.substr(5));
+    size_t plus_position = speed_string.find("+");
+    size_t d_position = speed_string.find("d");
+
+    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+
+    // try
+    try
+    {
+      base = std::stoi(speed_string.substr(0, plus_position));
+      number = std::stoi(speed_string.substr(plus_position + 1, d_position - plus_position - 1));
+      sides = std::stoi(speed_string.substr(d_position + 1));
+
+      d = dice(base, number, sides);
+    }
+    catch (const std::invalid_argument &e)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+    s = speed_string;
     return true;
   }
+  return false;
+}
+
+bool parse_damage(std::string &d, const std::string &line, dice &die)
+{
+  int base, number, sides;
+  if (line.rfind("DAM", 0) == 0)
+  {
+    std::string dam_string = trim(line.substr(5));
+    size_t plus_position = dam_string.find("+");
+    size_t d_position = dam_string.find("d");
+
+    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+
+    // try
+    try
+    {
+      base = std::stoi(dam_string.substr(0, plus_position));
+      number = std::stoi(dam_string.substr(plus_position + 1, d_position - plus_position - 1));
+      sides = std::stoi(dam_string.substr(d_position + 1));
+
+      die.set_dice(base, number, sides);
+    }
+    catch (const std::invalid_argument &e)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+    d = dam_string;
+    return true;
+  }
+  return false;
+
   return false;
 }
 
@@ -223,8 +285,9 @@ int parse(std::ifstream &readF)
   std::string line = "";
   getline(readF, line);
   line = trim(line);
+  dice *dye;
 
-  std::string color, name, symbol, desc, speed, damage, HP, abilities = "";
+  std::string color, name, symbol, desc, speed, damage, HP, abilities, rrty = "";
 
   // begin first line
   if (trim(line) != "RLG327 MONSTER DESCRIPTION 1")
@@ -274,7 +337,7 @@ int parse(std::ifstream &readF)
     // symbol
     if (attr == "SYMB" && parse_symbol(symbol, line))
     {
-      std::cout << "Symbol: " << name << std::endl;
+      std::cout << "Symbol: " << symbol << std::endl;
       continue;
     }
     else
@@ -307,7 +370,7 @@ int parse(std::ifstream &readF)
       return -1;
     }
     // speed
-    if (attr == "SPEED" && parse_speed(speed, line))
+    if (attr == "SPEED" && parse_speed(speed, line, *dye))
     {
       std::cout << "Speed: " << speed << std::endl;
       continue;
@@ -319,10 +382,60 @@ int parse(std::ifstream &readF)
     }
 
     // damage
+    if (attr == "DAM" && parse_damage(damage, line, *dye))
+    {
+      std::cout << "Damage: " << damage << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid damage format" << std::endl;
+      return -1;
+    }
+
     // HP
+    if (attr == "HP" && parse_HP())
+    {
+      std::cout << "HP: " << HP << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid HP format" << std::endl;
+      return -1;
+    }
     // RRTY
+    if (attr == "RRTY" && parse_RRTY())
+    {
+      std::cout << "RRTY: " << rrty << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid RRTY format" << std::endl;
+      return -1;
+    }
+
     // ABIL
-    // END
+    if (attr == "ABIL" && parse_ability() {
+      std::cout << "Abilities: " << abilities << std::endl;
+      continue; } else {
+      std::cout << "Error: Invalid ability format" << std::endl;
+      return -1; })
+      // END
+      // print out all information parsed
+      if (attr == "END")
+      {
+        std::cout << name << std::endl;
+        std::cout << desc << std::endl;
+        std::cout << color << std::endl;
+        std::cout << speed << std::endl;
+        std::cout << abilities << std::endl;
+        std::cout << HP << std::endl;
+        std::cout << damage << std::endl;
+        std::cout << symbol << std::endl;
+        std::cout << rrty << std::endl;
+      }
   }
 }
 
@@ -338,5 +451,8 @@ int main(int argc, char *argv[])
   // open filehow
   readF.open(file.c_str());
 
+  parse(readF);
+
+  readF.close();
   return 0;
 }
