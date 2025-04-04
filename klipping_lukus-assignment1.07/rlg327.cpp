@@ -141,19 +141,93 @@ std::string trim(const std::string &line)
   return std::string(iter, riter.base());
 }
 
-int parse_color()
+bool parse_name(std::string &n, const std::string &line)
 {
+  if (line.rfind("NAME", 0) == 0)
+  {
+    n = trim(line.substr(4));
+    return true;
+  }
+  return false;
 }
 
+bool parse_symbol(std::string &s, const std::string &line)
+{
+  if (line.rfind("SYMB", 0) == 0)
+  {
+    s = trim(line.substr(4))[0];
+    return true;
+  }
+  return false;
+}
+
+bool parse_color(std::string &c, const std::string &line)
+{
+  if (line.rfind("COLOR", 0) == 0)
+  {
+    c = trim(line.substr(5));
+    return true;
+  }
+  return false;
+}
+
+bool parse_desc(std::string &d, std::ifstream &rf, const std::string &line)
+{
+  if (line.rfind("DESC", 0) == 0)
+  {
+    std::string desc;
+    d = "";
+    while (std::getline(rf, desc))
+    {
+      desc = trim(desc);
+      if (desc == ".")
+      {
+        break; // end of description
+      }
+      if (!d.empty())
+      {
+        d += " ";
+      }
+      d += desc;
+    }
+    return true;
+  }
+  return false;
+}
+
+bool parse_speed(std::string &s, const std::string &line)
+{
+  if (line.rfind("SPEED", 0) == 0)
+  {
+    s = trim(line.substr(5));
+    return true;
+  }
+  return false;
+}
+
+bool parse_ability()
+{
+  /*
+    0 = smart
+    1 = tele
+    2 = tunnel
+    3 = erratic
+    4 = pass
+  */
+}
+
+// only print out values of parsed monster
 int parse(std::ifstream &readF)
 {
-  bool metadata = false;
+  bool metadata, monster1 = false;
   std::string line = "";
   getline(readF, line);
   line = trim(line);
 
+  std::string color, name, symbol, desc, speed, damage, HP, abilities = "";
+
   // begin first line
-  if (trim(line) != "RLG MONSTER DESCRIPTION 1")
+  if (trim(line) != "RLG327 MONSTER DESCRIPTION 1")
   {
     std::cout << "Error: Invalid file format" << std::endl;
     return -1;
@@ -165,7 +239,91 @@ int parse(std::ifstream &readF)
   // while not end of file, read
   while (!readF.eof())
   {
+    std::string attr;
+    readF >> attr; // read word one by one
+    attr = trim(attr);
+
+    std::getline(readF, line);
+    line = trim(line);
+    if (attr + line == "BEGIN MONSTER")
+    {
+      if (monster1)
+      {
+        std::cout << std::endl;
+      }
+      else
+      {
+        monster1 = true;
+      }
+      continue;
     }
+
+    // name
+    if (attr == "NAME" && parse_name(name, line))
+    {
+      std::cout << "Name: " << name << std::endl;
+      // skips to next iteration of loop
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid name format" << std::endl;
+      return -1;
+    }
+
+    // symbol
+    if (attr == "SYMB" && parse_symbol(symbol, line))
+    {
+      std::cout << "Symbol: " << name << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid symbol format" << std::endl;
+      return -1;
+    }
+
+    // color
+    if (attr == "COLOR" && parse_color(color, line))
+    {
+      std::cout << "Color: " << color << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid color format" << std::endl;
+      return -1;
+    }
+    // description
+    if (attr == "DESC" && parse_desc(desc, readF, line))
+    {
+      std::cout << "Desc: " << std::endl
+                << desc << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid description format" << std::endl;
+      return -1;
+    }
+    // speed
+    if (attr == "SPEED" && parse_speed(speed, line))
+    {
+      std::cout << "Speed: " << speed << std::endl;
+      continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return -1;
+    }
+
+    // damage
+    // HP
+    // RRTY
+    // ABIL
+    // END
+  }
 }
 
 // parse the monster file
