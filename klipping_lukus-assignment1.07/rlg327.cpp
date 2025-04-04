@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "dungeon.h"
 #include "pc.h"
@@ -13,6 +14,7 @@
 #include "move.h"
 #include "utils.h"
 #include "io.h"
+#include "dice.h"
 
 const char *victory =
     "\n                                       o\n"
@@ -123,8 +125,60 @@ public:
   std::vector<int> get_abilities() { return abilities; }
 };
 
+/* trims beginning and trailing whitespace */
+std::string trim(const std::string &line)
+{
+  std::string::const_iterator iter = line.begin();
+  while (iter != line.end() && isspace(*iter))
+  { // skip leading whitespace
+    ++iter;
+  }
+  std::string::const_reverse_iterator riter = line.rbegin();
+  while (riter.base() != iter && isspace(*riter))
+  { // skip trailing whitespace
+    ++riter;
+  }
+  return std::string(iter, riter.base());
+}
+
+int parse_color()
+{
+}
+
+int parse(std::ifstream &readF)
+{
+  bool metadata = false;
+  std::string line = "";
+  getline(readF, line);
+  line = trim(line);
+
+  // begin first line
+  if (trim(line) != "RLG MONSTER DESCRIPTION 1")
+  {
+    std::cout << "Error: Invalid file format" << std::endl;
+    return -1;
+  }
+  else
+  {
+    metadata = true;
+  }
+  // while not end of file, read
+  while (!readF.eof())
+  {
+    }
+}
+
+// parse the monster file
 int main(int argc, char *argv[])
 {
+  // creat _desc.txt
+  std::string file;
+  std::ifstream readF;
+  file = getenv("HOME");
+  file += "/.rlg327/monster_desc.txt";
+
+  // open filehow
+  readF.open(file.c_str());
 
   return 0;
 }
