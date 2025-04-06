@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <sstream>
 
 #include "dungeon.h"
 #include "pc.h"
@@ -83,12 +84,12 @@ class monsterInfo
 {
 private:
   std::string name;
-  char symbol;
-  int color;
+  std::string symbol;
+  std::string color;
   std::string desc;
-  int speed;
-  int damage;
-  int HP;
+  std::string speed;
+  std::string damage;
+  std::string HP;
   std::vector<int> abilities;
 
 public:
@@ -96,13 +97,11 @@ public:
   monsterInfo() : name(), symbol(), color(), desc(), speed(), damage(), HP(), abilities() {}
 
   // parameterized constructor
-  monsterInfo(const std::string &name, char symbol, int color, const std::string &desc, int speed, int damage, int HP, const std::vector<int> &abilities)
-      : name(name), symbol(symbol), color(color), desc(desc), speed(speed), damage(damage), HP(HP), abilities(abilities)
-  {
-  }
+  monsterInfo(std::string name, std::string symbol, std::string color, std::string desc, std::string speed, std::string damage, std::string HP, std::vector<int> abilities)
+      : name(name), symbol(symbol), color(color), desc(desc), speed(speed), damage(damage), HP(HP), abilities(abilities) {}
 
   // Setters
-  void set_monster(std::string name, char symbol, int color, std::string desc, int speed, int damage, int HP, std::vector<int> abilities)
+  void set_monster(std::string name, std::string symbol, std::string color, std::string desc, std::string speed, std::string damage, std::string HP, std::vector<int> abilities)
   {
     this->name = name;
     this->symbol = symbol;
@@ -115,14 +114,26 @@ public:
   }
 
   // Getters
-  int get_color() { return color; }
+  /*int get_color() { return color; }
   std::string get_name() { return name; }
   char get_symbol() { return symbol; }
   std::string get_desc() { return desc; }
   int get_speed() { return speed; }
   int get_damage() { return damage; }
-  int get_HP() { return HP; }
+  int get_HP() { return HP; }*/
   std::vector<int> get_abilities() { return abilities; }
+
+  friend std::ostream &operator<<(std::ostream &os, const monsterInfo &m)
+  {
+    os << "Abilities: ";
+    for (size_t i = 0; i < m.abilities.size(); ++i)
+    {
+      os << m.abilities[i];
+      if (i != m.abilities.size() - 1)
+        os << ", ";
+    }
+    return os;
+  }
 };
 
 /* trims beginning and trailing whitespace */
@@ -235,7 +246,7 @@ bool parse_damage(std::string &d, const std::string &line, dice &die)
   int base, number, sides;
   if (line.rfind("DAM", 0) == 0)
   {
-    std::string dam_string = trim(line.substr(5));
+    std::string dam_string = trim(line.substr(3));
     size_t plus_position = dam_string.find("+");
     size_t d_position = dam_string.find("d");
 
@@ -263,11 +274,9 @@ bool parse_damage(std::string &d, const std::string &line, dice &die)
     return true;
   }
   return false;
-
-  return false;
 }
 
-bool parse_ability()
+bool parse_abilities(std::vector<int> &a, const std::string &line)
 {
   /*
     0 = smart
@@ -276,6 +285,115 @@ bool parse_ability()
     3 = erratic
     4 = pass
   */
+  if (line.rfind("ABIL", 0) == 0)
+  {
+    std::string ability_string = trim(line.substr(5));
+    std::istringstream iss(ability_string);
+    std::string token;
+    while (iss >> token)
+    {
+      token = trim(token);
+
+      if (token == "SMART")
+      {
+        a.push_back(0);
+      }
+      else if (token == "TELE")
+      {
+        a.push_back(1);
+      }
+      else if (token == "TUNNEL")
+      {
+        a.push_back(2);
+      }
+      else if (token == "ERRATIC")
+      {
+        a.push_back(3);
+      }
+      else if (token == "PASS")
+      {
+        a.push_back(4);
+      }
+      else
+      {
+        std::cout << "Error: Invalid ability format" << std::endl;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool parse_RRTY(std::string &r, const std::string &line, dice &d)
+{
+  int base, number, sides;
+  if (line.rfind("RRTY", 0) == 0)
+  {
+    std::string rrty_string = trim(line.substr(4));
+    size_t plus_position = rrty_string.find("+");
+    size_t d_position = rrty_string.find("d");
+
+    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    {
+      std::cout << "Error: Invalid rrty format" << std::endl;
+      return false;
+    }
+
+    // try
+    try
+    {
+      base = std::stoi(rrty_string.substr(0, plus_position));
+      number = std::stoi(rrty_string.substr(plus_position + 1, d_position - plus_position - 1));
+      sides = std::stoi(rrty_string.substr(d_position + 1));
+
+      d.set_dice(base, number, sides);
+    }
+    catch (const std::invalid_argument &e)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+    r = rrty_string;
+    return true;
+  }
+  return false;
+}
+
+bool parse_HP(std::string &h, const std::string &line, dice &d)
+{
+  int base, number, sides;
+  if (line.rfind("HP", 0) == 0)
+  {
+    std::string HP_string = trim(line.substr(2));
+    size_t plus_position = HP_string.find("+");
+    size_t d_position = HP_string.find("d");
+
+    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    {
+      std::cout << "Error: Invalid HP format" << std::endl;
+      return false;
+    }
+
+    // try
+    try
+    {
+      base = std::stoi(HP_string.substr(0, plus_position));
+      number = std::stoi(HP_string.substr(plus_position + 1, d_position - plus_position - 1));
+      sides = std::stoi(HP_string.substr(d_position + 1));
+
+      d.set_dice(base, number, sides);
+    }
+    catch (const std::invalid_argument &e)
+    {
+      std::cout << "Error: Invalid speed format" << std::endl;
+      return false;
+    }
+    h = HP_string;
+    return true;
+  }
+  return false;
 }
 
 // only print out values of parsed monster
@@ -287,7 +405,11 @@ int parse(std::ifstream &readF)
   line = trim(line);
   dice *dye;
 
-  std::string color, name, symbol, desc, speed, damage, HP, abilities, rrty = "";
+  monsterInfo monster_info;              // object of monsterInfo
+  std::vector<monsterInfo> monster_list; // list of monsters
+
+  std::string color, name, symbol, desc, speed, damage, HP, rrty = "";
+  std::vector<int> abilities;
 
   // begin first line
   if (trim(line) != "RLG327 MONSTER DESCRIPTION 1")
@@ -394,7 +516,7 @@ int parse(std::ifstream &readF)
     }
 
     // HP
-    if (attr == "HP" && parse_HP())
+    if (attr == "HP" && parse_HP(HP, line, *dye))
     {
       std::cout << "HP: " << HP << std::endl;
       continue;
@@ -405,7 +527,7 @@ int parse(std::ifstream &readF)
       return -1;
     }
     // RRTY
-    if (attr == "RRTY" && parse_RRTY())
+    if (attr == "RRTY" && parse_RRTY(rrty, line, *dye))
     {
       std::cout << "RRTY: " << rrty << std::endl;
       continue;
@@ -417,25 +539,33 @@ int parse(std::ifstream &readF)
     }
 
     // ABIL
-    if (attr == "ABIL" && parse_ability() {
-      std::cout << "Abilities: " << abilities << std::endl;
-      continue; } else {
+    if (attr == "ABIL" && parse_abilities(abilities, line))
+    {
+      std::cout << "Abilities: " << monster_info << std::endl;
+      continue;
+    }
+    else
+    {
       std::cout << "Error: Invalid ability format" << std::endl;
-      return -1; })
-      // END
-      // print out all information parsed
-      if (attr == "END")
-      {
-        std::cout << name << std::endl;
-        std::cout << desc << std::endl;
-        std::cout << color << std::endl;
-        std::cout << speed << std::endl;
-        std::cout << abilities << std::endl;
-        std::cout << HP << std::endl;
-        std::cout << damage << std::endl;
-        std::cout << symbol << std::endl;
-        std::cout << rrty << std::endl;
-      }
+      return -1;
+    }
+    // END
+    // print out all information parsed
+    if (attr == "END")
+    {
+      std::cout << name << std::endl;
+      std::cout << desc << std::endl;
+      std::cout << color << std::endl;
+      std::cout << speed << std::endl;
+      std::cout << monster_info << std::endl; // prints abilities
+      std::cout << HP << std::endl;
+      std::cout << damage << std::endl;
+      std::cout << symbol << std::endl;
+      std::cout << rrty << std::endl;
+
+      monster_info.set_monster(name, symbol, color, desc, speed, damage, HP, abilities);
+      monster_list.push_back(monster_info);
+    }
   }
 }
 
