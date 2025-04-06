@@ -400,136 +400,108 @@ bool parse_HP(std::string &h, const std::string &line, dice &d)
 int parse(std::ifstream &readF)
 {
   // bool metadata, monster1 = false;
-  std::string line = "";
-  getline(readF, line);
-  line = trim(line);
-  dice *dye;
+  std::string line;
+  // begin first line
+  if (!std::getline(readF, line) || trim(line) != "RLG327 MONSTER DESCRIPTION 1")
+  {
+    std::cout << "Error: Invalid file format at 407" << std::endl;
+    return -1;
+  }
+
+  dice dye;
 
   monsterInfo monster_info;              // object of monsterInfo
   std::vector<monsterInfo> monster_list; // list of monsters
 
-  std::string color, name, symbol, desc, speed, damage, HP, rrty = "";
+  std::string color, name, symbol, desc, speed, damage, HP, rrty;
   std::vector<int> abilities;
+  bool in_monster = false;
 
-  // begin first line
-  if (trim(line) != "RLG327 MONSTER DESCRIPTION 1")
-  {
-    std::cout << "Error: Invalid file format" << std::endl;
-    return -1;
-  }
   // while not end of file, read
-  while (!readF.eof())
+  while (std::getline(readF, line))
   {
-    std::string attr;
-    readF >> attr; // read word one by one
-    attr = trim(attr);
-
-    std::getline(readF, line);
     line = trim(line);
-    if (attr + line == "BEGIN MONSTER")
+    if (line.empty())
     {
-      // std::cout << "Begin monster" << std::endl;
       continue;
     }
-    else
+
+    if (line == "BEGIN MONSTER")
     {
-      std::cout << "Error: Invalid file format" << std::endl;
+      // std::cout << "Begin monster" << std::endl;
+      in_monster = true;
+      color = name = symbol = desc = speed = damage = HP = rrty = "";
+      abilities.clear();
+      continue;
+    }
+    if (!in_monster)
+    {
+      std::cout << "Error: Invalid begin format" << std::endl;
       return -1;
     }
 
+    std::string attr;
+    std::istringstream iss(line);
+    iss >> attr;
+    attr = trim(attr);
+    std::getline(iss, line);
+    line = trim(line);
+
     // name
-    if (attr == "NAME" && parse_name(name, line))
+    if (attr == "NAME" && parse_name(name, attr + " " + line))
     {
       std::cout << "Name: " << name << std::endl;
       // skips to next iteration of loop
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid name format" << std::endl;
-      return -1;
-    }
 
     // symbol
-    if (attr == "SYMB" && parse_symbol(symbol, line))
+    if (attr == "SYMB" && parse_symbol(symbol, attr + " " + line))
     {
       std::cout << "Symbol: " << symbol << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid symbol format" << std::endl;
-      return -1;
-    }
 
     // color
-    if (attr == "COLOR" && parse_color(color, line))
+    if (attr == "COLOR" && parse_color(color, attr + " " + line))
     {
       std::cout << "Color: " << color << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid color format" << std::endl;
-      return -1;
-    }
+
     // description
-    if (attr == "DESC" && parse_desc(desc, readF, line))
+    if (attr == "DESC" && parse_desc(desc, readF, attr + " " + line))
     {
       std::cout << "Desc: " << std::endl
                 << desc << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid description format" << std::endl;
-      return -1;
-    }
+
     // speed
-    if (attr == "SPEED" && parse_speed(speed, line, *dye))
+    if (attr == "SPEED" && parse_speed(speed, attr + " " + line, dye))
     {
       std::cout << "Speed: " << speed << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid speed format" << std::endl;
-      return -1;
-    }
 
     // damage
-    if (attr == "DAM" && parse_damage(damage, line, *dye))
+    if (attr == "DAM" && parse_damage(damage, attr + " " + line, dye))
     {
       std::cout << "Damage: " << damage << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid damage format" << std::endl;
-      return -1;
-    }
-
     // HP
-    if (attr == "HP" && parse_HP(HP, line, *dye))
+    if (attr == "HP" && parse_HP(HP, attr + " " + line, dye))
     {
       std::cout << "HP: " << HP << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid HP format" << std::endl;
-      return -1;
-    }
+
     // RRTY
-    if (attr == "RRTY" && parse_RRTY(rrty, line, *dye))
+    if (attr == "RRTY" && parse_RRTY(rrty, attr + " " + line, dye))
     {
       std::cout << "RRTY: " << rrty << std::endl;
       continue;
-    }
-    else
-    {
-      std::cout << "Error: Invalid RRTY format" << std::endl;
-      return -1;
     }
 
     // ABIL
@@ -538,11 +510,7 @@ int parse(std::ifstream &readF)
       std::cout << "Abilities: " << monster_info << std::endl;
       continue;
     }
-    else
-    {
-      std::cout << "Error: Invalid ability format" << std::endl;
-      return -1;
-    }
+
     // END
     // print out all information parsed
     if (attr == "END")
@@ -559,10 +527,12 @@ int parse(std::ifstream &readF)
 
       monster_info.set_monster(name, symbol, color, desc, speed, damage, HP, abilities);
       monster_list.push_back(monster_info);
-      return 0;
+      in_monster = false;
     }
+    std::cout << "Error: Unknown attribute: " << attr << std::endl;
+    return -1;
   }
-  return -1;
+  return 0;
 }
 
 // parse the monster file
@@ -572,13 +542,16 @@ int main(int argc, char *argv[])
   std::string file;
   std::ifstream readF;
   file = getenv("HOME");
-  file += "/.rlg327/monster_desc.txt";
+  file += std::string("/") + ".rlg327" + "/" + "monster_desc.txt";
 
   // open filehow
   readF.open(file.c_str());
 
-  parse(readF);
-
+  int read = parse(readF);
+  if (!read || read == -1)
+  {
+    std::cout << "Error: Invalid file format at line 593" << std::endl;
+  }
   readF.close();
   return 0;
 }
