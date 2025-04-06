@@ -215,7 +215,7 @@ bool parse_speed(std::string &s, const std::string &line, dice &d)
     size_t plus_position = speed_string.find("+");
     size_t d_position = speed_string.find("d");
 
-    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    if ((plus_position == std::string::npos && d_position == std::string::npos) || plus_position > d_position)
     {
       std::cout << "Error: Invalid speed format" << std::endl;
       return false;
@@ -250,7 +250,7 @@ bool parse_damage(std::string &d, const std::string &line, dice &die)
     size_t plus_position = dam_string.find("+");
     size_t d_position = dam_string.find("d");
 
-    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    if ((plus_position == std::string::npos && d_position == std::string::npos) || plus_position > d_position)
     {
       std::cout << "Error: Invalid speed format" << std::endl;
       return false;
@@ -335,7 +335,7 @@ bool parse_RRTY(std::string &r, const std::string &line, dice &d)
     size_t plus_position = rrty_string.find("+");
     size_t d_position = rrty_string.find("d");
 
-    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    if ((plus_position == std::string::npos && d_position == std::string::npos) || plus_position > d_position)
     {
       std::cout << "Error: Invalid rrty format" << std::endl;
       return false;
@@ -370,7 +370,7 @@ bool parse_HP(std::string &h, const std::string &line, dice &d)
     size_t plus_position = HP_string.find("+");
     size_t d_position = HP_string.find("d");
 
-    if (plus_position == std::string::npos && d_position == std::string::npos || plus_position > d_position)
+    if ((plus_position == std::string::npos && d_position == std::string::npos) || plus_position > d_position)
     {
       std::cout << "Error: Invalid HP format" << std::endl;
       return false;
@@ -399,7 +399,7 @@ bool parse_HP(std::string &h, const std::string &line, dice &d)
 // only print out values of parsed monster
 int parse(std::ifstream &readF)
 {
-  bool metadata, monster1 = false;
+  // bool metadata, monster1 = false;
   std::string line = "";
   getline(readF, line);
   line = trim(line);
@@ -417,10 +417,6 @@ int parse(std::ifstream &readF)
     std::cout << "Error: Invalid file format" << std::endl;
     return -1;
   }
-  else
-  {
-    metadata = true;
-  }
   // while not end of file, read
   while (!readF.eof())
   {
@@ -432,15 +428,13 @@ int parse(std::ifstream &readF)
     line = trim(line);
     if (attr + line == "BEGIN MONSTER")
     {
-      if (monster1)
-      {
-        std::cout << std::endl;
-      }
-      else
-      {
-        monster1 = true;
-      }
+      // std::cout << "Begin monster" << std::endl;
       continue;
+    }
+    else
+    {
+      std::cout << "Error: Invalid file format" << std::endl;
+      return -1;
     }
 
     // name
@@ -565,8 +559,10 @@ int parse(std::ifstream &readF)
 
       monster_info.set_monster(name, symbol, color, desc, speed, damage, HP, abilities);
       monster_list.push_back(monster_info);
+      return 0;
     }
   }
+  return -1;
 }
 
 // parse the monster file
