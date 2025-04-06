@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 #include "dungeon.h"
 #include "pc.h"
@@ -284,7 +285,20 @@ bool parse_abilities(std::vector<int> &a, const std::string &line)
     2 = tunnel
     3 = erratic
     4 = pass
+    5 = uniq
   */
+
+  static const std::unordered_map<std::string, int> ability_map = {
+      {"SMART", 0},
+      {"TELE", 1},
+      {"TUNNEL", 2},
+      {"ERRATIC", 3},
+      {"PASS", 4},
+      {"UNIQ", 5},
+      {"PICKUP", 6},
+      {"DESTROY", 7},
+      {"BOSS", 8}};
+
   if (line.rfind("ABIL", 0) == 0)
   {
     std::string ability_string = trim(line.substr(5));
@@ -293,26 +307,10 @@ bool parse_abilities(std::vector<int> &a, const std::string &line)
     while (iss >> token)
     {
       token = trim(token);
-
-      if (token == "SMART")
+      auto it = ability_map.find(token);
+      if (it != ability_map.end())
       {
-        a.push_back(0);
-      }
-      else if (token == "TELE")
-      {
-        a.push_back(1);
-      }
-      else if (token == "TUNNEL")
-      {
-        a.push_back(2);
-      }
-      else if (token == "ERRATIC")
-      {
-        a.push_back(3);
-      }
-      else if (token == "PASS")
-      {
-        a.push_back(4);
+        a.push_back(it->second);
       }
       else
       {
@@ -322,40 +320,14 @@ bool parse_abilities(std::vector<int> &a, const std::string &line)
     }
     return true;
   }
-
   return false;
 }
 
 bool parse_RRTY(std::string &r, const std::string &line, dice &d)
 {
-  int base, number, sides;
   if (line.rfind("RRTY", 0) == 0)
   {
-    std::string rrty_string = trim(line.substr(4));
-    size_t plus_position = rrty_string.find("+");
-    size_t d_position = rrty_string.find("d");
-
-    if ((plus_position == std::string::npos && d_position == std::string::npos) || plus_position > d_position)
-    {
-      std::cout << "Error: Invalid rrty format" << std::endl;
-      return false;
-    }
-
-    // try
-    try
-    {
-      base = std::stoi(rrty_string.substr(0, plus_position));
-      number = std::stoi(rrty_string.substr(plus_position + 1, d_position - plus_position - 1));
-      sides = std::stoi(rrty_string.substr(d_position + 1));
-
-      d.set_dice(base, number, sides);
-    }
-    catch (const std::invalid_argument &e)
-    {
-      std::cout << "Error: Invalid speed format" << std::endl;
-      return false;
-    }
-    r = rrty_string;
+    r = trim(line.substr(4))[0];
     return true;
   }
   return false;
@@ -440,6 +412,34 @@ int parse(std::ifstream &readF)
       return -1;
     }
 
+    // END
+    // print out all information parsed
+    if (line == "END")
+    {
+      std::cout << "Name: " << name << std::endl;
+      std::cout << "desc: " << desc << std::endl;
+      std::cout << "color: " << color << std::endl;
+      std::cout << "speed: " << speed << std::endl;
+      std::cout << "Abilities: ";
+      for (size_t i = 0; i < abilities.size(); ++i)
+      {
+        std::cout << abilities[i];
+        if (i != abilities.size() - 1)
+          std::cout << ", ";
+      }
+      std::cout << std::endl;
+      std::cout << "HP: " << HP << std::endl;
+      std::cout << "damage: " << damage << std::endl;
+      std::cout << "symbol: " << symbol << std::endl;
+      std::cout << "rrty: " << rrty << std::endl
+                << std::endl;
+
+      monster_info.set_monster(name, symbol, color, desc, speed, damage, HP, abilities);
+      monster_list.push_back(monster_info);
+      in_monster = false;
+      continue;
+    }
+
     std::string attr;
     std::istringstream iss(line);
     iss >> attr;
@@ -450,85 +450,74 @@ int parse(std::ifstream &readF)
     // name
     if (attr == "NAME" && parse_name(name, attr + " " + line))
     {
-      std::cout << "Name: " << name << std::endl;
-      // skips to next iteration of loop
+      // std::cout << "Name: " << name << std::endl;
+      //  skips to next iteration of loop
       continue;
     }
 
     // symbol
     if (attr == "SYMB" && parse_symbol(symbol, attr + " " + line))
     {
-      std::cout << "Symbol: " << symbol << std::endl;
+      // std::cout << "Symbol: " << symbol << std::endl;
       continue;
     }
 
     // color
     if (attr == "COLOR" && parse_color(color, attr + " " + line))
     {
-      std::cout << "Color: " << color << std::endl;
+      // std::cout << "Color: " << color << std::endl;
       continue;
     }
 
     // description
     if (attr == "DESC" && parse_desc(desc, readF, attr + " " + line))
     {
-      std::cout << "Desc: " << std::endl
-                << desc << std::endl;
+      /*std::cout << "Desc: " << std::endl
+                << desc << std::endl;*/
       continue;
     }
 
     // speed
     if (attr == "SPEED" && parse_speed(speed, attr + " " + line, dye))
     {
-      std::cout << "Speed: " << speed << std::endl;
+      // std::cout << "Speed: " << speed << std::endl;
       continue;
     }
 
     // damage
     if (attr == "DAM" && parse_damage(damage, attr + " " + line, dye))
     {
-      std::cout << "Damage: " << damage << std::endl;
+      // std::cout << "Damage: " << damage << std::endl;
       continue;
     }
     // HP
     if (attr == "HP" && parse_HP(HP, attr + " " + line, dye))
     {
-      std::cout << "HP: " << HP << std::endl;
+      // std::cout << "HP: " << HP << std::endl;
       continue;
     }
 
     // RRTY
     if (attr == "RRTY" && parse_RRTY(rrty, attr + " " + line, dye))
     {
-      std::cout << "RRTY: " << rrty << std::endl;
+      // std::cout << "RRTY: " << rrty << std::endl;
       continue;
     }
 
     // ABIL
-    if (attr == "ABIL" && parse_abilities(abilities, line))
+    if (attr == "ABIL" && parse_abilities(abilities, attr + " " + line))
     {
-      std::cout << "Abilities: " << monster_info << std::endl;
+      /*std::cout << "Abilities: ";
+      for (size_t i = 0; i < abilities.size(); ++i)
+      {
+        std::cout << abilities[i];
+        if (i != abilities.size() - 1)
+          std::cout << ", ";
+      }
+      std::cout << std::endl;*/
       continue;
     }
 
-    // END
-    // print out all information parsed
-    if (attr == "END")
-    {
-      std::cout << name << std::endl;
-      std::cout << desc << std::endl;
-      std::cout << color << std::endl;
-      std::cout << speed << std::endl;
-      std::cout << monster_info << std::endl; // prints abilities
-      std::cout << HP << std::endl;
-      std::cout << damage << std::endl;
-      std::cout << symbol << std::endl;
-      std::cout << rrty << std::endl;
-
-      monster_info.set_monster(name, symbol, color, desc, speed, damage, HP, abilities);
-      monster_list.push_back(monster_info);
-      in_monster = false;
-    }
     std::cout << "Error: Unknown attribute: " << attr << std::endl;
     return -1;
   }
@@ -548,10 +537,11 @@ int main(int argc, char *argv[])
   readF.open(file.c_str());
 
   int read = parse(readF);
-  if (!read || read == -1)
+  if (read == -1)
   {
     std::cout << "Error: Invalid file format at line 593" << std::endl;
   }
+  std::cout << "End of file, parsing correct" << std::endl;
   readF.close();
   return 0;
 }
