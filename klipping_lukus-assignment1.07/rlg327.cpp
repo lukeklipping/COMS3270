@@ -188,10 +188,10 @@ bool parse_desc(std::string &d, std::ifstream &rf, const std::string &line)
   if (line.rfind("DESC", 0) == 0)
   {
     std::string desc;
-    d = "";
+    // d = "";
     while (std::getline(rf, desc))
     {
-      desc = trim(desc);
+      // desc = trim(desc);
       if (desc == ".")
       {
         break; // end of description
@@ -200,7 +200,8 @@ bool parse_desc(std::string &d, std::ifstream &rf, const std::string &line)
       {
         d += " ";
       }
-      d += desc;
+      // if (d.length() > 77)
+      d += desc + "\n";
     }
     return true;
   }
@@ -287,10 +288,9 @@ bool parse_abilities(std::vector<int> &a, const std::string &line)
     4 = pass
     5 = uniq
   */
-
   static const std::unordered_map<std::string, int> ability_map = {
       {"SMART", 0},
-      {"TELE", 1},
+      {"TELE", 1}, // like a java hashmap
       {"TUNNEL", 2},
       {"ERRATIC", 3},
       {"PASS", 4},
