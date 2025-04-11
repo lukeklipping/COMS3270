@@ -338,7 +338,15 @@ void io_display_no_fog(dungeon *d)
     {
       if (d->character_map[y][x])
       {
-        mvaddch(y + 1, x, d->character_map[y][x]->symbol);
+        attron(COLOR_PAIR(d->character_map[y][x]->color));
+        mvaddch(y + 1, x, character_get_symbol(d->character_map[y][x]));
+        attroff(COLOR_PAIR(d->character_map[y][x]->color));
+      }
+      else if (d->object_map[y][x])
+      {
+        attron(COLOR_PAIR(d->object_map[y][x]->color));
+        mvaddch(y + 1, x, d->object_map[y][x]->symbol);
+        attroff(COLOR_PAIR(d->object_map[y][x]->color));
       }
       else
       {

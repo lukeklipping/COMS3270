@@ -17,6 +17,7 @@
 #include "pc.h"
 #include "npc.h"
 #include "io.h"
+#include "object.h"
 
 #define DUMP_HARDNESS_IMAGES 0
 
@@ -1454,7 +1455,7 @@ void new_dungeon(dungeon *d)
 
   place_pc(d);
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
-  object_gen(d);
+  gen_objects(d);
 
   gen_monsters(d);
 }

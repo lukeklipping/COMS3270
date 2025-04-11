@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "dice.h"
+#include "object.h"
 
 typedef struct dungeon dungeon_t;
 
@@ -43,14 +44,13 @@ class npc;
 class monster_description
 {
 private:
+public:
   std::string name, description;
   char symbol;
   std::vector<uint32_t> color;
   uint32_t abilities;
   dice speed, hitpoints, damage;
   uint32_t rarity;
-
-public:
   monster_description() : name(), description(), symbol(0), color(0),
                           abilities(0), speed(), hitpoints(), damage(),
                           rarity(0)
@@ -74,14 +74,13 @@ public:
 class object_description
 {
 private:
+public:
   std::string name, description;
   object_type_t type;
   uint32_t color;
   dice hit, damage, dodge, defence, weight, speed, attribute, value;
   bool artifact;
   uint32_t rarity;
-
-public:
   object_description() : name(), description(), type(objtype_no_type),
                          color(0), hit(), damage(),
                          dodge(), defence(), weight(),
@@ -104,6 +103,7 @@ public:
            const bool artifact,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
+  static object *generate_object(dungeon_t *d);
   /* Need all these accessors because otherwise there is a *
    * circular dependancy that is difficult to get around.  */
   inline const std::string &

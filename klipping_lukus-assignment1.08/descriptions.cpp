@@ -1229,3 +1229,39 @@ npc *monster_description::generate_monster(dungeon_t *d)
 
   return m;
 }
+
+object *object_description::generate_object(dungeon_t *d)
+{
+  object *o;
+  std::vector<object_description> &ov = d->object_descriptions;
+  object_description &od = ov[rand_range(0, ov.size() - 1)];
+
+  o = new object(d, od);
+  return o;
+}
+
+/*
+
+
+object *object_description::gen_object()
+{
+  object *o;
+  o = new object();
+
+  o->name = this->name.c_str();
+  o->description = this->description.c_str();
+  o->symbol = object_symbol[this->type];
+  o->type = this->type;
+  o->color = this->color;
+  o->damage = this->damage;
+  o->hit = this->hit.roll();
+  o->dodge = this->dodge.roll();
+  o->defence = this->defence.roll();
+  o->weight = this->weight.roll();
+  o->speed = this->speed.roll();
+  o->attribute = this->attribute.roll();
+  o->value = this->value.roll();
+  o->seen = false;
+
+  return o;
+}*/
