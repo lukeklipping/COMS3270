@@ -16,21 +16,26 @@ public:
     uint32_t color;
     pair_t position;
     dice damage;
-    int32_t hit, damage, dodge, defense, weight, speed, attribute, value;
-    /*object(const object_description &od) : name(od.get_name()),
-                                           description(od.get_description()),
-                                           type(od.get_type()),
-                                           color(od.get_color()),
-                                           position(),
-                                           damage(od.get_damage()),
-                                           hit(od.get_hit()),
-                                           damage(od.get_damage()),
-                                           dodge(od.get_dodge()),
-                                           defense(od.get_defence()),
-                                           weight(od.get_weight()),
-                                           speed(od.get_speed()),
-                                           attribute(od.get_attribute()),
-                                           value(od.get_value()) {};*/
+    int32_t hit, dodge, defense, weight, speed, attribute, value;
+    object(const object_description &obj_desc, pair_t pos, object *next)
+        : name(obj_desc.get_name()),
+          description(obj_desc.get_description()),
+          type(obj_desc.get_type()),
+          symbol(object_symbol[obj_desc.get_type()]), // Assumes object_symbol maps types to chars
+          color(obj_desc.get_color()),
+          damage(obj_desc.get_damage()),
+          hit(obj_desc.get_hit().roll()),
+          dodge(obj_desc.get_dodge().roll()),
+          defense(obj_desc.get_defence().roll()),
+          weight(obj_desc.get_weight().roll()),
+          speed(obj_desc.get_speed().roll()),
+          attribute(obj_desc.get_attribute().roll()),
+          value(obj_desc.get_value().roll())
+    {
+        position[dim_x] = pos[dim_x];
+        position[dim_y] = pos[dim_y];
+    }
+    ~object() {};
 };
 
 void object_gen(dungeon_t *d);

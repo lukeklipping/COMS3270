@@ -15,7 +15,6 @@ void object_gen(dungeon_t *d)
 
     for (i = 0; i < d->num_objects; i++)
     {
-        o = od.gen_object();
         room = rand_range(1, d->num_rooms - 1);
         position[dim_y] = rand_range(d->rooms[room].position[dim_y],
                                      (d->rooms[room].position[dim_y] +
@@ -24,8 +23,8 @@ void object_gen(dungeon_t *d)
                                      (d->rooms[room].position[dim_x] +
                                       d->rooms[room].size[dim_x] - 1));
 
-        o->position[dim_x] = position[dim_x];
-        o->position[dim_y] = position[dim_y];
+        o = new object(od, position, nullptr);
+
         d->object_map[position[dim_y]][position[dim_x]] = o;
     }
 }
@@ -44,4 +43,5 @@ void objects_delete(dungeon_t *d)
             }
         }
     }
+    d->num_objects = 0;
 }

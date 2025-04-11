@@ -5,6 +5,7 @@
 
 #include "dims.h"
 #include "character.h"
+#include "dungeon.h"
 
 #define NPC_SMART 0x00000001
 #define NPC_TELEPATH 0x00000002
@@ -44,11 +45,12 @@
 
 typedef uint32_t npc_characteristics_t;
 class monster_description;
+class dungeon;
 
 class npc : public character
 {
 public:
-  // npc(dungeon_t *d, monster_description &monster);
+  npc(dungeon_t *d, const monster_description &monster);
   npc_characteristics_t characteristics;
   uint32_t have_seen_pc;
   pair_t pc_last_known_position;

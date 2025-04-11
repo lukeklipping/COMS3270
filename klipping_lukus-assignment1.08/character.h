@@ -2,6 +2,7 @@
 #define CHARACTER_H
 
 #include <stdint.h>
+#include <vector>
 
 #include "dims.h"
 #include "dice.h"
@@ -29,9 +30,11 @@ public:
    * characters have been created by the game.                              */
   uint32_t sequence_number;
   uint32_t kills[num_kill_types];
-  dice damage;
+  const dice *damage;
+  uint32_t hp;
   const char *name;
-  char getSymbol() { return symbol; }
+  uint32_t color;
+  // char getSymbol() { return symbol; }
 };
 
 class dungeon;

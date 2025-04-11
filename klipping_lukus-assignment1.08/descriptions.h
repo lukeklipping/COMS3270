@@ -38,6 +38,7 @@ typedef enum object_type
 } object_type_t;
 
 extern const char object_symbol[];
+class npc;
 
 class monster_description
 {
@@ -66,6 +67,8 @@ public:
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
   char get_symbol() { return symbol; }
+  static npc *generate_monster(dungeon_t *d);
+  friend npc;
 };
 
 class object_description
@@ -101,7 +104,6 @@ public:
            const bool artifact,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
-  object *gen_object();
   /* Need all these accessors because otherwise there is a *
    * circular dependancy that is difficult to get around.  */
   inline const std::string &
