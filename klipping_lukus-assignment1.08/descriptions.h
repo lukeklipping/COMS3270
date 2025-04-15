@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include "dice.h"
-#include "object.h"
+// #include "object.h"
 
 typedef struct dungeon dungeon_t;
 
@@ -103,7 +103,7 @@ public:
            const bool artifact,
            const uint32_t rarity);
   std::ostream &print(std::ostream &o);
-  static object *generate_object(dungeon_t *d);
+  // static object *generate_object(dungeon_t *d);
   /* Need all these accessors because otherwise there is a *
    * circular dependancy that is difficult to get around.  */
   inline const std::string &

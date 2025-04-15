@@ -23,6 +23,7 @@
 #define NPC_MIN_SPEED 5
 #define NPC_MAX_SPEED 20
 #define MAX_MONSTERS 15
+#define MAX_OBJECTS 15
 #define SAVE_DIR ".rlg327"
 #define DUNGEON_SAVE_FILE "dungeon"
 #define DUNGEON_SAVE_SEMANTIC "RLG327-" TERM
@@ -36,6 +37,7 @@
 #define hardnessxy(x, y) (d->hardness[y][x])
 #define charpair(pair) (d->character_map[pair[dim_y]][pair[dim_x]])
 #define charxy(x, y) (d->character_map[y][x])
+#define objpair(pair) (d->object_map[pair[dim_y]][pair[dim_x]])
 
 enum __attribute__((__packed__)) terrain_type
 {
@@ -87,6 +89,7 @@ public:
   heap_t events;
   uint16_t num_monsters;
   uint16_t num_objects;
+  uint16_t max_objects;
   uint16_t max_monsters;
   uint32_t character_sequence_number;
   /* Game time isn't strictly necessary.  It's implicit in the turn number *

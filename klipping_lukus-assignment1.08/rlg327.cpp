@@ -10,6 +10,7 @@
 #include "move.h"
 #include "utils.h"
 #include "io.h"
+#include "descriptions.h"
 #include "object.h"
 
 const char *victory =
@@ -87,7 +88,6 @@ int main(int argc, char *argv[])
   char *load_file;
   char *pgm_file;
 
-  parse_descriptions(&d);
   // print_descriptions(&d);
   // destroy_descriptions(&d);
 
@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
   do_seed = 1;
   save_file = load_file = NULL;
   d.max_monsters = MAX_MONSTERS;
+  d.max_objects = MAX_OBJECTS;
 
   /* The project spec requires '--load' and '--save'.  It's common  *
    * to have short and long forms of most switches (assuming you    *
@@ -225,6 +226,7 @@ int main(int argc, char *argv[])
   srand(seed);
 
   io_init_terminal();
+  parse_descriptions(&d);
   init_dungeon(&d);
 
   if (do_load)
@@ -243,7 +245,8 @@ int main(int argc, char *argv[])
   /* Ignoring PC position in saved dungeons.  Not a bug. */
   config_pc(&d);
   gen_monsters(&d);
-  object_gen(&d);
+  gen_objects(&d);
+  pc_observe_terrain(d.PC, &d);
 
   io_display(&d);
   if (!do_load && !do_image)
@@ -303,8 +306,8 @@ int main(int argc, char *argv[])
     character_delete(d.PC);
   }
 
-  destroy_descriptions(&d);
   delete_dungeon(&d);
+  destroy_descriptions(&d);
 
   return 0;
 }

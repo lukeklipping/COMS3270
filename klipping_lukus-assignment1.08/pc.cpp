@@ -284,3 +284,10 @@ int32_t is_illuminated(pc *p, int16_t y, int16_t x)
 {
   return p->visible[y][x];
 }
+void pc_see_object(character *the_pc, object *o)
+{
+  if (o)
+  {
+    o->has_been_seen();
+  }
+}

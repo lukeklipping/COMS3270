@@ -1229,7 +1229,7 @@ npc *monster_description::generate_monster(dungeon_t *d)
 
   return m;
 }
-
+/*
 object *object_description::generate_object(dungeon_t *d)
 {
   object *o;
@@ -1238,7 +1238,7 @@ object *object_description::generate_object(dungeon_t *d)
 
   o = new object(d, od);
   return o;
-}
+}*/
 
 /*
 

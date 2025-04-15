@@ -1,14 +1,15 @@
 #ifndef PC_H
-# define PC_H
+#define PC_H
 
-# include <stdint.h>
+#include <stdint.h>
 
-# include "dims.h"
-# include "character.h"
-# include "dungeon.h"
+#include "dims.h"
+#include "character.h"
+#include "dungeon.h"
 
-class pc : public character {
- public:
+class pc : public character
+{
+public:
   terrain_type known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
 };
@@ -25,5 +26,6 @@ void pc_init_known_terrain(pc *p);
 void pc_observe_terrain(pc *p, dungeon *d);
 int32_t is_illuminated(pc *p, int16_t y, int16_t x);
 void pc_reset_visibility(pc *p);
+void pc_see_object(character *the_pc, object *o);
 
 #endif
