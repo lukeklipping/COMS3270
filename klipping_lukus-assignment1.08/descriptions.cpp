@@ -1218,12 +1218,20 @@ std::ostream &operator<<(std::ostream &o, object_description &od)
 npc *monster_description::generate_monster(dungeon_t *d)
 {
   npc *m;
-
   std::vector<monster_description> &mv = d->monster_descriptions;
-  // std:: cout<< mv.size()<< std::endl;
-  monster_description md = mv[rand_range(0, mv.size() - 1)];
+  const monster_description *md = nullptr;
+  do
+  {
+    const monster_description &cand = mv[rand_range(0, mv.size() - 1)];
 
-  m = new npc(d, md);
+    if ((uint32_t)(rand() % 100) >= cand.rarity)
+    {
+      continue;
+    }
+    md = &cand;
+  } while (!md);
+
+  m = new npc(d, *md);
 
   heap_insert(&d->events, new_event(d, event_character_turn, m, 0));
 

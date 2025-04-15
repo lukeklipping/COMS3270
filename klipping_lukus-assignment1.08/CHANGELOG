@@ -1,5 +1,7 @@
 4/11/25 1:30: Beginning work on 1.08
 4/11/25 1:35: Adding damage & description to character
 4/11/25 1:50: create object classes
+4/15/25 10:50: found object bug
+                was iterating to num_objects instead of max_objects, which is a null var
 
 
