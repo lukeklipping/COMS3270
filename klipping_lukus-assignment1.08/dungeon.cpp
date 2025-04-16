@@ -600,19 +600,28 @@ static int empty_dungeon(dungeon *d)
         hardnessxy(x, y) = 255;
       }
       charxy(x, y) = NULL;
+      objxy(x, y) = NULL;
     }
   }
   d->is_new = 1;
+  d->rooms = NULL;
 
   return 0;
 }
 
-static int place_rooms(dungeon *d)
+static int place_rooms(dungeon_t *d)
 {
   pair_t p;
   uint32_t i;
   int success;
   room_t *r;
+  uint8_t hardness[DUNGEON_Y][DUNGEON_X];
+  uint32_t x, y;
+  struct timeval tv, start;
+
+  gettimeofday(&start, NULL);
+
+  memcpy(&hardness, &d->hardness, sizeof(hardness));
 
   for (success = 0; !success;)
   {
@@ -632,8 +641,21 @@ static int place_rooms(dungeon *d)
         {
           if (mappair(p) >= ter_floor)
           {
+            gettimeofday(&tv, NULL);
+            if ((tv.tv_sec - start.tv_sec) > 1)
+            {
+              memcpy(&d->hardness, &hardness, sizeof(hardness));
+              return 1;
+            }
             success = 0;
-            empty_dungeon(d);
+            memcpy(&d->hardness, &hardness, sizeof(hardness));
+            for (y = 1; y < DUNGEON_Y - 1; y++)
+            {
+              for (x = 1; x < DUNGEON_X - 1; x++)
+              {
+                mapxy(x, y) = ter_wall;
+              }
+            }
           }
           else if ((p[dim_y] != r->position[dim_y] - 1) &&
                    (p[dim_y] != r->position[dim_y] + r->size[dim_y]) &&
@@ -682,6 +704,10 @@ static int make_rooms(dungeon *d)
   for (i = MIN_ROOMS; i < MAX_ROOMS && rand_under(5, 8); i++)
     ;
   d->num_rooms = i;
+  if (d->rooms)
+  {
+    free(d->rooms);
+  }
   d->rooms = (room_t *)malloc(sizeof(*d->rooms) * d->num_rooms);
 
   for (i = 0; i < d->num_rooms; i++)

@@ -1,8 +1,6 @@
-This part of the Roguelike project implements a C++ parser for monster description files used in a Roguelike game. Each monster is defined in a text file located 
-at $HOME/.rlg327/monster_desc.txt, using a simple custom format that includes fields like name, description, symbol, color, speed, hitpoints, 
-damage, abilities, and rarity. The parser reads and validates each monster entry between BEGIN MONSTER and END tags, ignoring any bad or 
-incomplete entries. Parsed monsters are printed in the terminal
+This part of the Roguelike project adds dynamic monster and object instances to the dungeon, created from parsed descriptions.
+ Unique entities are limited to one instance, and objects are rendered with color using curses. Objects can persist on the floor 
+ and optionally be picked up or destroyed by monsters. Press 'f' to rid of fog, and see all monsters and objects.
 
-
-For TA:
-    It works 
+ for ta:
+    Sometimes it throws a segfault. Just re run it again

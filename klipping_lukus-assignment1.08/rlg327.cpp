@@ -78,7 +78,7 @@ void usage(char *name)
 
 int main(int argc, char *argv[])
 {
-  dungeon d;
+  dungeon_t d;
   time_t seed;
   struct timeval tv;
   int32_t i;

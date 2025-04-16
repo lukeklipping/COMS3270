@@ -38,6 +38,7 @@
 #define charpair(pair) (d->character_map[pair[dim_y]][pair[dim_x]])
 #define charxy(x, y) (d->character_map[y][x])
 #define objpair(pair) (d->object_map[pair[dim_y]][pair[dim_x]])
+#define objxy(x, y) (d->object_map[y][x])
 
 enum __attribute__((__packed__)) terrain_type
 {
