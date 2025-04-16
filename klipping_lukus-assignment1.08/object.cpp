@@ -72,7 +72,7 @@ void objects_delete(dungeon_t *d)
         {
             if (d->object_map[y][x])
             {
-                delete d->object_map[y][x];
+                delete (d->object_map[y][x]);
                 d->object_map[y][x] = nullptr;
             }
         }

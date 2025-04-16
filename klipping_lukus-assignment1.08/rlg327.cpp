@@ -88,9 +88,6 @@ int main(int argc, char *argv[])
   char *load_file;
   char *pgm_file;
 
-  // print_descriptions(&d);
-  // destroy_descriptions(&d);
-
   // return 0;
 
   /* Default behavior: Seed with the time, generate a new dungeon, *
@@ -99,6 +96,7 @@ int main(int argc, char *argv[])
   do_seed = 1;
   save_file = load_file = NULL;
   d.max_monsters = MAX_MONSTERS;
+
   d.max_objects = MAX_OBJECTS;
 
   /* The project spec requires '--load' and '--save'.  It's common  *
@@ -225,8 +223,8 @@ int main(int argc, char *argv[])
 
   srand(seed);
 
-  io_init_terminal();
   parse_descriptions(&d);
+  io_init_terminal();
   init_dungeon(&d);
 
   if (do_load)

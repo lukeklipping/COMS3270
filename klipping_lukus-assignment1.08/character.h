@@ -34,6 +34,7 @@ public:
   uint32_t hp;
   const char *name;
   uint32_t color;
+  virtual ~character() {}
   // char getSymbol() { return symbol; }
 };
 

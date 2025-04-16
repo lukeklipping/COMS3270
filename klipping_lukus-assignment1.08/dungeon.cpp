@@ -703,8 +703,7 @@ static int make_rooms(dungeon *d)
 
 int gen_dungeon(dungeon *d)
 {
-  empty_dungeon(d);
-
+  // empty_dungeon(d);
   do
   {
     make_rooms(d);
@@ -769,6 +768,7 @@ void delete_dungeon(dungeon *d)
   free(d->rooms);
   heap_delete(&d->events);
   memset(d->character_map, 0, sizeof(d->character_map));
+  objects_delete(d);
 }
 
 void init_dungeon(dungeon *d)
