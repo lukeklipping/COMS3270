@@ -975,6 +975,35 @@ static void io_list_monsters(dungeon *d)
   /* And redraw the dungeon */
   io_display(d);
 }
+static void display_inventory(dungeon *d)
+{
+  int item_count = d->PC->numitems;
+  int i;
+  int y = 0;
+  for (i = 0; i < item_count; i++)
+  {
+    mvprintw(y++, 0, "%s", d->PC->inventory[i]->get_name());
+  }
+  for (i = item_count; i < 20; i++)
+  {
+    mvprintw(y++, 30, "%d) %-40s", i, "Empty");
+  }
+}
+
+static void display_equipped(dungeon *d)
+{
+  int item_count = d->PC->numequip;
+  int i;
+  int y = 0;
+  for (i = 0; i < item_count; i++)
+  {
+    mvprintw(y++, 0, "%s", d->PC->inventory[i]->get_name());
+  }
+  for (i = item_count; i < 20; i++)
+  {
+    mvprintw(y++, 30, "%d) %-40s", i, "Empty");
+  }
+}
 
 void io_handle_input(dungeon *d)
 {
@@ -1131,12 +1160,15 @@ void io_handle_input(dungeon *d)
       break;
     case 'x':
       // expunge
+
       break;
     case 'i':
       // inventory
       break;
     case 'e':
       // display equipment
+      display_inventory(d);
+      fail_code = 1;
       break;
     case 'I':
       // inspect item
@@ -1159,9 +1191,4 @@ void io_handle_input(dungeon *d)
       fail_code = 1;
     }
   } while (fail_code);
-}
-
-static void display_inventory(dungeon_t *d)
-{
-  int item_count = d->PC->num_items;
 }

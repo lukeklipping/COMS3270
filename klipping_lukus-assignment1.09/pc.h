@@ -19,6 +19,13 @@ public:
   object *inventory[10];
   // equipment slots
   object *equipment[12];
+
+  void pickup(dungeon *d) {}
+  void drop(dungeon *d, object *o) {}
+  void wear(int) {}
+  void expunge(object *o) {}
+  void take_off(object *o) {}
+  int inven_space() {}
 };
 
 void pc_delete(pc *pc);
