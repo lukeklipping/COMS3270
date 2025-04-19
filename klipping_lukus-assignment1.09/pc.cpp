@@ -70,6 +70,7 @@ void pc::drop(dungeon *d, object *o)
   io_queue_message("You have dropped %s", o->get_name());
   return;
 }
+/*
 void pc::wear(int i)
 {
   if (!inventory[i])
@@ -84,7 +85,8 @@ void pc::wear(int i)
     io_queue_message("You can't wear that item.");
     return;
   }
-}
+  o = equipment[i];
+}*/
 void pc::take_off(object *o)
 {
   if (!o)
@@ -138,8 +140,6 @@ void config_pc(dungeon *d)
   d->PC->color.push_back(COLOR_WHITE);
   d->PC->damage = &pc_dice;
   d->PC->name = "Isabella Garcia-Shapiro";
-  d->PC->numequip = 0;
-  d->PC->numitems = 0;
 
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
   int i;

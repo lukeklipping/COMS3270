@@ -975,6 +975,7 @@ static void io_list_monsters(dungeon *d)
   /* And redraw the dungeon */
   io_display(d);
 }
+/*
 static void display_inventory(dungeon *d)
 {
   int item_count = d->PC->numitems;
@@ -1003,6 +1004,62 @@ static void display_equipped(dungeon *d)
   {
     mvprintw(y++, 30, "%d) %-40s", i, "Empty");
   }
+}*/
+void io_inventory(dungeon *d)
+{
+  int key, i;
+  attron(COLOR_PAIR(COLOR_CYAN));
+  mvprintw(2, 20, "Inventory:");
+  attroff(COLOR_PAIR(COLOR_CYAN));
+
+  for (i = 0; i < INVENTORY_SIZE; i++)
+  {
+    if (d->PC->inventory[i])
+      mvprintw(i + 3, 20, "%s", d->PC->inventory[i]->get_name());
+    else
+      mvprintw(i + 3, 20, "Empty");
+  }
+
+  mvprintw(16, 20, "Enter esc to abort");
+
+  refresh();
+
+  do
+  {
+    if ((key = getch()) == 27)
+    {
+      io_display(d);
+      return;
+    }
+  } while (1);
+}
+void io_equipment(dungeon *d)
+{
+  int key, i;
+  attron(COLOR_PAIR(COLOR_CYAN));
+  mvprintw(2, 20, "Equipment:");
+  attroff(COLOR_PAIR(COLOR_CYAN));
+
+  for (i = 0; i < EQUIPMENT_SIZE; i++)
+  {
+    if (d->PC->equipment[i])
+      mvprintw(i + 3, 20, "%s", d->PC->equipment[i]->get_name());
+    else
+      mvprintw(i + 3, 20, "Empty");
+  }
+
+  mvprintw(16, 20, "Enter esc to abort");
+
+  refresh();
+
+  do
+  {
+    if ((key = getch()) == 27)
+    {
+      io_display(d);
+      return;
+    }
+  } while (1);
 }
 
 void io_handle_input(dungeon *d)
@@ -1164,10 +1221,12 @@ void io_handle_input(dungeon *d)
       break;
     case 'i':
       // inventory
+      io_inventory(d);
+      fail_code = 1;
       break;
     case 'e':
       // display equipment
-      display_inventory(d);
+      io_equipment(d);
       fail_code = 1;
       break;
     case 'I':
