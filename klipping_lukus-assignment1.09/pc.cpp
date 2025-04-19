@@ -85,39 +85,55 @@ int pc::drop(dungeon *d, object *o)
   io_queue_message("You have dropped %s", o->get_name());
   return 0;
 }
-/*
-void pc::wear(int i)
+
+int pc::wear(int i)
 {
   if (!inventory[i])
   {
     io_queue_message("You don't have that item.");
-    return;
+    return -1;
   }
   object *o;
   uint32_t wear_slot = inventory[i]->get_type();
   if (wear_slot > objtype_SCROLL - 1)
   {
     io_queue_message("You can't wear that item.");
-    return;
+    return -1;
   }
-  o = equipment[i];
-}*/
-void pc::take_off(object *o)
+  o = inventory[i];
+  inventory[i] = NULL;
+  if (equipment[i])
+  {
+    if (inven_space() == -1)
+    {
+      io_queue_message("You drop %s, because your bag is full", equipment[i]->get_name());
+      drop(equipment[wear_slot]);
+    }
+    else
+    {
+      take_off(equipment[wear_slot]);
+    }
+  }
+  equipment[wear_slot] = o;
+  io_queue_message("You have equipped %s", o->get_name());
+  return 0;
+}
+int pc::take_off(object *o)
 {
   if (!o)
   {
     io_queue_message("Not wearing anything in position...");
-    return;
+    return -1;
   }
   else if (inven_space() == -1)
   {
     io_queue_message("You can't take off %s, your bag is full", o->get_name());
-    return;
+    return -1;
   }
 
   inventory[inven_space()] = o;
   io_queue_message("You have taken off %s", o->get_name());
-  return;
+  return 0;
 }
 
 uint32_t pc_is_alive(dungeon *d)
@@ -140,6 +156,7 @@ void place_pc(dungeon *d)
 
 void config_pc(dungeon *d)
 {
+  // 0+1d4
   static dice pc_dice(0, 1, 4);
 
   d->PC = new pc;

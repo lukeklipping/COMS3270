@@ -22,10 +22,10 @@ public:
 
   int pickup(dungeon *d);
   int drop(dungeon *d, object *o);
-  void wear(int);
+  int wear(int);
   int expunge(object *o);
   int drop(object *o);
-  void take_off(object *o);
+  int take_off(object *o);
   int inven_space();
 };
 
