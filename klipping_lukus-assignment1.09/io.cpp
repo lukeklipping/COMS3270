@@ -1362,7 +1362,24 @@ void io_inspect(dungeon *d)
     }
     else
     {
-      io_queue_message("%s", d->PC->inventory[key - '0']->get_description().c_str());
+      std::string desc = d->PC->inventory[key - '0']->get_description();
+      const int max_length = 78;
+      size_t pos = 0;
+      while (pos < desc.length())
+      {
+        size_t len = std::min<size_t>(max_length, desc.length() - pos);
+        if (pos + len < desc.length())
+        {
+          while (len > 0 && desc[pos + len] != ' ')
+            len--;
+          if (len == 0)
+            len = max_length;
+        }
+        io_queue_message("%s", desc.substr(pos, len).c_str());
+        pos += len;
+        while (pos < desc.length() && desc[pos] == ' ')
+          pos++;
+      }
       io_display(d);
       return;
     }
