@@ -1055,15 +1055,15 @@ void io_inventory(dungeon *d)
 {
   int key, i;
   attron(COLOR_PAIR(COLOR_CYAN));
-  mvprintw(2, 20, "Inventory:");
+  mvprintw(2, 20, "|%-*s|", MODE_WIDTH, "Inventory");
   attroff(COLOR_PAIR(COLOR_CYAN));
 
   for (i = 0; i < INVENTORY_SIZE; i++)
   {
     if (d->PC->inventory[i])
-      mvprintw(i + 3, 20, "%s", d->PC->inventory[i]->get_name());
+      mvprintw(i + 3, 20, "|%2d: %-*s|", i, MODE_WIDTH - 4, d->PC->inventory[i]->get_name());
     else
-      mvprintw(i + 3, 20, "Empty");
+      mvprintw(i + 3, 20, "|%-*s|", MODE_WIDTH - 4, "EMPTY");
   }
 
   mvprintw(16, 20, "Enter esc to abort");
@@ -1083,18 +1083,58 @@ void io_equipment(dungeon *d)
 {
   int key, i;
   attron(COLOR_PAIR(COLOR_CYAN));
-  mvprintw(2, 20, "Equipment:");
+  mvprintw(2, 20, "|-------------Equipment-------------|");
   attroff(COLOR_PAIR(COLOR_CYAN));
 
   for (i = 0; i < EQUIPMENT_SIZE; i++)
   {
     if (d->PC->equipment[i])
-      mvprintw(i + 3, 20, "%s", d->PC->equipment[i]->get_name());
+    {
+      switch (i)
+      {
+      case 1:
+        mvprintw(i + 3, 20, "|a. WEAPON: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 2:
+        mvprintw(i + 3, 20, "|b. OFFHAND: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 3:
+        mvprintw(i + 3, 20, "|c. RANGED: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 4:
+        mvprintw(i + 3, 20, "|d. ARMOR: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 5:
+        mvprintw(i + 3, 20, "|e. HELMET: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 6:
+        mvprintw(i + 3, 20, "|f. CLOAK: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 7:
+        mvprintw(i + 3, 20, "|g. GLOVES: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 8:
+        mvprintw(i + 3, 20, "|h. BOOTS: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 9:
+        mvprintw(i + 3, 20, "|i. AMULET: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 10:
+        mvprintw(i + 3, 20, "|j. LIGHT: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 11:
+        mvprintw(i + 3, 20, "|j. RING1: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      case 12:
+        mvprintw(i + 3, 20, "|j. RING2: %37s|", d->PC->equipment[i]->get_name());
+        break;
+      }
+    }
     else
       mvprintw(i + 3, 20, "Empty");
   }
 
-  mvprintw(16, 20, "Enter esc to abort");
+  mvprintw(16, 20, "|-----------ESC to abort------------|");
 
   refresh();
 
@@ -1102,6 +1142,95 @@ void io_equipment(dungeon *d)
   {
     if ((key = getch()) == 27)
     {
+      io_display(d);
+      return;
+    }
+  } while (1);
+}
+
+void io_inspect(dungeon *d)
+{
+  int key, i;
+  attron(COLOR_PAIR(COLOR_CYAN));
+  mvprintw(2, 20, "|-------------inspect-------------|");
+  attroff(COLOR_PAIR(COLOR_CYAN));
+  for (i = 0; i < INVENTORY_SIZE; i++)
+  {
+    if (d->PC->inventory[i])
+      mvprintw(i + 3, 20, "|%2d: %-*s|", i, MODE_WIDTH - 4, d->PC->inventory[i]->get_name());
+    else
+      mvprintw(i + 3, 20, "|%-*s|", MODE_WIDTH - 4, "EMPTY");
+  }
+
+  mvprintw(16, 20, "|-----------ESC to abort------------|");
+
+  refresh();
+
+  do
+  {
+    if ((key = getch()) == 27)
+    {
+      io_display(d);
+      return;
+    }
+    else if (key != '0' && key != '1' && key != '2' && key != '3' && key != '4' && key != '5' && key != '6' && key != '7' && key != '8' && key != '9')
+    {
+      mvprintw(18, 1, "Wrong number!");
+      continue;
+    }
+    else if (!(d->PC->inventory[key - '0']))
+    {
+      mvprintw(18, 1, "No item!");
+      refresh();
+      continue;
+    }
+    else
+    {
+      io_queue_message("%s", d->PC->inventory[key - '0']->get_description().c_str());
+      io_display(d);
+      return;
+    }
+  } while (1);
+}
+
+void io_expunge(dungeon *d)
+{
+  int key, i;
+  attron(COLOR_PAIR(COLOR_CYAN));
+  mvprintw(2, 20, "|-------------expunge-------------|");
+  attroff(COLOR_PAIR(COLOR_CYAN));
+  for (i = 0; i < INVENTORY_SIZE; i++)
+  {
+    if (d->PC->inventory[i])
+      mvprintw(i + 3, 20, "|%2d: %-*s|", i, MODE_WIDTH - 4, d->PC->inventory[i]->get_name());
+    else
+      mvprintw(i + 3, 20, "|%-*s|", MODE_WIDTH - 4, "EMPTY");
+  }
+
+  mvprintw(16, 20, "|-----------ESC to abort------------|");
+
+  refresh();
+
+  do
+  {
+    if ((key = getch()) == 27)
+    {
+      io_display(d);
+      return;
+    }
+    else if (key != '0' && key != '1' && key != '2' && key != '3' && key != '4' && key != '5' && key != '6' && key != '7' && key != '8' && key != '9')
+    {
+      mvprintw(18, 1, "Wrong number!");
+      continue;
+    }
+    else if (d->PC->expunge(d->PC->inventory[key - '0']))
+    {
+      io_display(d);
+      return;
+    }
+    else
+    {
+      d->PC->inventory[key - '0'] = NULL;
       io_display(d);
       return;
     }
@@ -1261,10 +1390,12 @@ void io_handle_input(dungeon *d)
     case 'd':
       // drop
       io_drop(d);
+      fail_code = 1;
       break;
     case 'x':
       // expunge
-
+      io_expunge(d);
+      fail_code = 1;
       break;
     case 'i':
       // inventory
@@ -1278,6 +1409,8 @@ void io_handle_input(dungeon *d)
       break;
     case 'I':
       // inspect item
+      io_inspect(d);
+      fail_code = 1;
       break;
     case 'L':
       // look

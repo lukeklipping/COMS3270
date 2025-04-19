@@ -22,12 +22,12 @@ int pc::inven_space()
   return -1;
 }
 
-void pc::expunge(object *o)
+int pc::drop(object *o)
 {
   if (!o)
   {
     io_queue_message("You don't have that item.");
-    return;
+    return -1;
   }
   for (int i = 0; i < 10; i++)
   {
@@ -36,9 +36,22 @@ void pc::expunge(object *o)
       delete o;
       inventory[i] = NULL;
       io_queue_message("You have dropped %s", o->get_name());
-      return;
+      return 0;
     }
   }
+  return 0;
+}
+
+int pc::expunge(object *o)
+{
+  if (!o)
+  {
+    io_queue_message("You don't have that item.");
+    return -1;
+  }
+  io_queue_message("You have expunged %s", o->get_name());
+  delete o;
+  return 0;
 }
 
 int pc::pickup(dungeon *d)

@@ -25,6 +25,7 @@
 #define MAX_OBJECTS 15
 #define INVENTORY_SIZE 10
 #define EQUIPMENT_SIZE 12
+#define MODE_WIDTH 45
 #define SAVE_DIR ".rlg327"
 #define DUNGEON_SAVE_FILE "dungeon"
 #define DUNGEON_SAVE_SEMANTIC "RLG327-" TERM
