@@ -1005,6 +1005,52 @@ static void display_equipped(dungeon *d)
     mvprintw(y++, 30, "%d) %-40s", i, "Empty");
   }
 }*/
+
+void io_drop(dungeon *d)
+{
+  int32_t key;
+  int i;
+  mvprintw(2, 1, "|-------------------Drop Mode--------------------|");
+  for (i = 0; i < 10; i++)
+  {
+    if (d->PC->inventory[i])
+    {
+      mvprintw(i + 3, 1, "|%c. %-45s|", '0' + i, d->PC->inventory[i]->get_name());
+    }
+    else
+      mvprintw(i + 3, 1, "|%c. Empty                                        |", '0' + i);
+  }
+  mvprintw(13, 1, "|------------------------------------------------|");
+  mvprintw(14, 1, "|------------------------------------------------|");
+  mvprintw(15, 1, "|Choose an object to drop                        |");
+  mvprintw(16, 1, "|Enter esc to abort                              |");
+  mvprintw(17, 1, "|------------------------------------------------|");
+  do
+  {
+    if ((key = getch()) == 27 /* ESC */)
+    {
+
+      io_display(d);
+      return;
+    }
+    else if (key != '0' && key != '1' && key != '2' && key != '3' && key != '4' && key != '5' && key != '6' && key != '7' && key != '8' && key != '9')
+    {
+      mvprintw(18, 1, "Wrong number!");
+      continue;
+    }
+    else if (d->PC->drop(d, d->PC->inventory[key - '0']))
+    {
+      io_display(d);
+      return;
+    }
+    else
+    {
+      d->PC->inventory[key - '0'] = NULL;
+      io_display(d);
+      return;
+    }
+  } while (1);
+}
 void io_inventory(dungeon *d)
 {
   int key, i;
@@ -1214,6 +1260,7 @@ void io_handle_input(dungeon *d)
       break;
     case 'd':
       // drop
+      io_drop(d);
       break;
     case 'x':
       // expunge

@@ -41,34 +41,36 @@ void pc::expunge(object *o)
   }
 }
 
-void pc::pickup(dungeon *d)
+int pc::pickup(dungeon *d)
 {
-  if (inven_space() != -1 && objpair(d->PC->position))
+  if (inven_space() != -1 && objpair(position))
   {
     d->PC->inventory[inven_space()] = objpair(position);
     io_queue_message("You pick up %s", objpair(position)->get_name());
+    objpair(position) = NULL;
   }
-  else
+  else if (inven_space() == -1 && objpair(position))
   {
-    io_queue_message("Bag is full, unable to pick up %s",
-                     objpair(d->PC->position)->get_name());
+    io_queue_message("You can't pick up %s, your bag is full",
+                     objpair(position)->get_name());
   }
+  return 0;
 }
-void pc::drop(dungeon *d, object *o)
+int pc::drop(dungeon *d, object *o)
 {
   if (!o)
   {
     io_queue_message("Not object in position...");
-    return;
+    return -1;
   }
   else if (objpair(position))
   {
     io_queue_message("You can't drop %s there, object on ground!", o->get_name());
-    return;
+    return -1;
   }
   objpair(position) = o;
   io_queue_message("You have dropped %s", o->get_name());
-  return;
+  return 0;
 }
 /*
 void pc::wear(int i)
@@ -139,7 +141,8 @@ void config_pc(dungeon *d)
   d->PC->kills[kill_direct] = d->PC->kills[kill_avenged] = 0;
   d->PC->color.push_back(COLOR_WHITE);
   d->PC->damage = &pc_dice;
-  d->PC->name = "Isabella Garcia-Shapiro";
+  d->PC->name = "You";
+  d->PC->hp = 100;
 
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
   int i;

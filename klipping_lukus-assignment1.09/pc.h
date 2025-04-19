@@ -20,15 +20,15 @@ public:
   // equipment slots
   object *equipment[12];
 
-  void pickup(dungeon *d);
-  void drop(dungeon *d, object *o);
+  int pickup(dungeon *d);
+  int drop(dungeon *d, object *o);
   void wear(int);
   void expunge(object *o);
   void take_off(object *o);
   int inven_space();
 };
 
-void pc_delete(pc *pc);
+// void pc_delete(pc *pc);
 uint32_t pc_is_alive(dungeon *d);
 void config_pc(dungeon *d);
 uint32_t pc_next_pos(dungeon *d, pair_t dir);
