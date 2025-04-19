@@ -10,6 +10,26 @@
 #include "io.h"
 #include "object.h"
 
+// returns the speed of the PC
+int pc::refactor()
+{
+  int i;
+  speed = PC_SPEED; // 10
+  for (i = 0; i < 12; i++)
+  {
+    if (equipment[i])
+    {
+      speed += equipment[i]->get_speed();
+    }
+  }
+  if (speed < 1)
+  {
+    speed = 1;
+  }
+  return speed;
+}
+
+// checks number of items in inventory
 int pc::inven_space()
 {
   int i;
@@ -22,53 +42,7 @@ int pc::inven_space()
   return -1;
 }
 
-int pc::drop(object *o)
-{
-  if (!o)
-  {
-    io_queue_message("You don't have that item.");
-    return -1;
-  }
-  for (int i = 0; i < 10; i++)
-  {
-    if (inventory[i] == o)
-    {
-      delete o;
-      inventory[i] = NULL;
-      io_queue_message("You have dropped %s", o->get_name());
-      return 0;
-    }
-  }
-  return 0;
-}
-
-int pc::expunge(object *o)
-{
-  if (!o)
-  {
-    io_queue_message("You don't have that item.");
-    return -1;
-  }
-  io_queue_message("You have expunged %s", o->get_name());
-  delete o;
-  return 0;
-}
-
-int pc::pickup(dungeon *d)
-{
-  if (inven_space() != -1 && objpair(position))
-  {
-    d->PC->inventory[inven_space()] = objpair(position);
-    io_queue_message("You pick up %s", objpair(position)->get_name());
-    objpair(position) = NULL;
-  }
-  else if (inven_space() == -1 && objpair(position))
-  {
-    io_queue_message("You can't pick up %s, your bag is full",
-                     objpair(position)->get_name());
-  }
-  return 0;
-}
+// drops an item on the ground
 int pc::drop(dungeon *d, object *o)
 {
   if (!o)
@@ -86,6 +60,37 @@ int pc::drop(dungeon *d, object *o)
   return 0;
 }
 
+// expunges an item from the game
+int pc::expunge(object *o)
+{
+  if (!o)
+  {
+    io_queue_message("You don't have that item.");
+    return -1;
+  }
+  io_queue_message("You have expunged %s", o->get_name());
+  delete o;
+  return 0;
+}
+
+// picks up an item from the ground
+int pc::pickup(dungeon *d)
+{
+  if (inven_space() != -1 && objpair(position))
+  {
+    d->PC->inventory[inven_space()] = objpair(position);
+    io_queue_message("You pick up %s", objpair(position)->get_name());
+    objpair(position) = NULL;
+  }
+  else if (inven_space() == -1 && objpair(position))
+  {
+    io_queue_message("You can't pick up %s, your bag is full",
+                     objpair(position)->get_name());
+  }
+  return 0;
+}
+
+// wears an item from the inventory that is wearable
 int pc::wear(int i)
 {
   if (!inventory[i])
@@ -93,31 +98,71 @@ int pc::wear(int i)
     io_queue_message("You don't have that item.");
     return -1;
   }
-  object *o;
-  uint32_t wear_slot = inventory[i]->get_type();
-  if (wear_slot > objtype_SCROLL - 1)
+  object *o = inventory[i];
+  uint32_t wear_slot;
+  switch (o->get_type())
   {
+  case objtype_WEAPON:
+    wear_slot = 0;
+    break; // a. WEAPON
+  case objtype_OFFHAND:
+    wear_slot = 1;
+    break; // b. OFFHAND
+  case objtype_RANGED:
+    wear_slot = 2;
+    break; // c. RANGED
+  case objtype_ARMOR:
+    wear_slot = 3;
+    break; // d. ARMOR
+  case objtype_HELMET:
+    wear_slot = 4;
+    break; // e. HELMET
+  case objtype_CLOAK:
+    wear_slot = 5;
+    break; // f. CLOAK
+  case objtype_GLOVES:
+    wear_slot = 6;
+    break; // g. GLOVES
+  case objtype_BOOTS:
+    wear_slot = 7;
+    break; // h. BOOTS
+  case objtype_AMULET:
+    wear_slot = 8;
+    break; // i. AMULET
+  case objtype_LIGHT:
+    wear_slot = 9;
+    break; // j. LIGHT
+  case objtype_RING:
+    wear_slot = 10; // k. RING1
+    if (equipment[wear_slot])
+    {
+      wear_slot = 11; // l. RING2
+      if (equipment[wear_slot])
+      {
+        io_queue_message("Both ring slots are occupied.");
+        return -1;
+      }
+    }
+    break;
+  default:
     io_queue_message("You can't wear that item.");
     return -1;
   }
-  o = inventory[i];
-  inventory[i] = NULL;
-  if (equipment[i])
+
+  if (equipment[wear_slot])
   {
-    if (inven_space() == -1)
-    {
-      io_queue_message("You drop %s, because your bag is full", equipment[i]->get_name());
-      drop(equipment[wear_slot]);
-    }
-    else
-    {
-      take_off(equipment[wear_slot]);
-    }
+    inventory[i] = equipment[wear_slot];
+  }
+  else
+  {
+    inventory[i] = NULL;
   }
   equipment[wear_slot] = o;
   io_queue_message("You have equipped %s", o->get_name());
+  refactor(); // recalculate speed
   return 0;
 }
+// takes off an item from the equipment
 int pc::take_off(object *o)
 {
   if (!o)
@@ -133,6 +178,7 @@ int pc::take_off(object *o)
 
   inventory[inven_space()] = o;
   io_queue_message("You have taken off %s", o->get_name());
+  refactor(); // recalculate speed
   return 0;
 }
 
@@ -152,6 +198,30 @@ void place_pc(dungeon *d)
 
   pc_init_known_terrain(d->PC);
   pc_observe_terrain(d->PC, d);
+}
+void delete_pc_inventory(pc *p)
+{
+  int i;
+  for (i = 0; i < INVENTORY_SIZE; i++)
+  {
+    if (p->inventory[i])
+    {
+      delete p->inventory[i];
+      p->inventory[i] = NULL;
+    }
+  }
+}
+void delete_pc_equipment(pc *p)
+{
+  int i;
+  for (i = 0; i < EQUIPMENT_SIZE; i++)
+  {
+    if (p->equipment[i])
+    {
+      delete p->equipment[i];
+      p->equipment[i] = NULL;
+    }
+  }
 }
 
 void config_pc(dungeon *d)

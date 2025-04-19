@@ -27,9 +27,12 @@ public:
   int drop(object *o);
   int take_off(object *o);
   int inven_space();
+  int refactor();
 };
 
 // void pc_delete(pc *pc);
+void delete_pc_inventory(pc *p);
+void delete_pc_equipment(pc *p);
 uint32_t pc_is_alive(dungeon *d);
 void config_pc(dungeon *d);
 uint32_t pc_next_pos(dungeon *d, pair_t dir);

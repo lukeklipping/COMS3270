@@ -18,109 +18,53 @@
 
 void do_combat(dungeon *d, character *atk, character *def)
 {
-  int can_see_atk, can_see_def;
-  const char *organs[] = {
-      "liver",              /*  0 */
-      "pancreas",           /*  1 */
-      "heart",              /*  2 */
-      "eye",                /*  3 */
-      "arm",                /*  4 */
-      "leg",                /*  5 */
-      "intestines",         /*  6 */
-      "gall bladder",       /*  7 */
-      "lungs",              /*  8 */
-      "hand",               /*  9 */
-      "foot",               /* 10 */
-      "spinal cord",        /* 11 */
-      "pituitary gland",    /* 12 */
-      "thyroid",            /* 13 */
-      "tongue",             /* 14 */
-      "bladder",            /* 15 */
-      "diaphram",           /* 16 */
-      "stomach",            /* 17 */
-      "pharynx",            /* 18 */
-      "esophagus",          /* 19 */
-      "trachea",            /* 20 */
-      "urethra",            /* 21 */
-      "spleen",             /* 22 */
-      "ganglia",            /* 23 */
-      "ear",                /* 24 */
-      "subcutaneous tissue" /* 25 */
-      "cerebellum",
-      /* 26 */        /* Brain parts begin here */
-      "hippocampus",  /* 27 */
-      "frontal lobe", /* 28 */
-      "brain",        /* 29 */
-  };
-  int part;
-
-  if (def->alive)
+  uint32_t damage = 0;
+  if (atk == d->PC)
   {
-    def->alive = 0;
-    charpair(def->position) = NULL;
+    int i;
+    for (i = 0; i < EQUIPMENT_SIZE; i++)
+    {
+      if (i == 0 && !d->PC->equipment[i])
+      {
+        damage += d->PC->damage->roll();
+      }
+      else if (d->PC->equipment[i])
+      {
+        damage += d->PC->equipment[i]->roll_dice();
+      }
+    }
+  }
+  else // monster atk
+  {
+    damage = atk->damage->roll();
+  }
+  if (atk == d->PC)
+  {
+    io_queue_message("You hit %s for %d damage.", def->name, damage);
+  }
+  else
+  {
+    io_queue_message("%s hits you for %d damage.", atk->name, damage);
+  }
+  def->hp -= damage;
+  if (def->hp <= 0)
+  {
 
+    def->alive = 0;
+
+    charpair(def->position) = NULL;
     if (def != d->PC)
     {
       d->num_monsters--;
     }
-    else
+    else // PC
     {
-      if ((part = rand() % (sizeof(organs) / sizeof(organs[0]))) < 26)
-      {
-        io_queue_message("As %s%s eats your %s,", is_unique(atk) ? "" : "the ",
-                         atk->name, organs[rand() % (sizeof(organs) / sizeof(organs[0]))]);
-        io_queue_message("   ...you wonder if there is an afterlife.");
-        /* Queue an empty message, otherwise the game will not pause for *
-         * player to see above.                                          */
-        io_queue_message("");
-      }
-      else
-      {
-        io_queue_message("Your last thoughts fade away as "
-                         "%s%s eats your %s...",
-                         is_unique(atk) ? "" : "the ",
-                         atk->name, organs[part]);
-        io_queue_message("");
-      }
-      /* Queue an empty message, otherwise the game will not pause for *
-       * player to see above.                                          */
-      io_queue_message("");
+      delete_pc_equipment(d->PC);
+      delete_pc_inventory(d->PC);
     }
-    atk->kills[kill_direct]++;
-    atk->kills[kill_avenged] += (def->kills[kill_direct] +
-                                 def->kills[kill_avenged]);
-  }
-
-  if (atk == d->PC)
-  {
-    io_queue_message("You smite %s%s!", is_unique(def) ? "" : "the ", def->name);
-  }
-
-  can_see_atk = can_see(d, character_get_pos(d->PC),
-                        character_get_pos(atk), 1, 0);
-  can_see_def = can_see(d, character_get_pos(d->PC),
-                        character_get_pos(def), 1, 0);
-
-  if (atk != d->PC && def != d->PC)
-  {
-    if (can_see_atk && !can_see_def)
-    {
-      io_queue_message("%s%s callously murders some poor, "
-                       "defenseless creature.",
-                       is_unique(atk) ? "" : "The ", atk->name);
-    }
-    if (can_see_def && !can_see_atk)
-    {
-      io_queue_message("Something kills %s%s.",
-                       is_unique(def) ? "" : "the helpless ", def->name);
-    }
-    if (can_see_atk && can_see_def)
-    {
-      io_queue_message("You watch in abject horror as %s%s "
-                       "gruesomely murders %s%s!",
-                       is_unique(atk) ? "" : "the ", atk->name,
-                       is_unique(def) ? "" : "the ", def->name);
-    }
+    character_increment_dkills(atk);
+    character_increment_ikills(atk, (character_get_dkills(def) +
+                                     character_get_ikills(def)));
   }
 }
 
@@ -130,7 +74,17 @@ void move_character(dungeon *d, character *c, pair_t next)
       ((next[dim_y] != c->position[dim_y]) ||
        (next[dim_x] != c->position[dim_x])))
   {
-    do_combat(d, c, charpair(next));
+    if (d->PC == c || charpair(next) == d->PC)
+    {
+      do_combat(d, c, charpair(next));
+    }
+    else
+    {
+      d->character_map[character_get_y(c)][character_get_x(c)] = NULL;
+      character_set_y(c, next[dim_y]);
+      character_set_x(c, next[dim_x]);
+      d->character_map[character_get_y(c)][character_get_x(c)] = c;
+    }
   }
   else
   {
