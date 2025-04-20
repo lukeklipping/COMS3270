@@ -368,3 +368,83 @@ RRTY 80
 ART TRUE
 END
 
+BEGIN OBJECT
+NAME Netherite Armor
+HIT 0+2d3
+DAM 0+2d3
+DODGE 0+0d1
+SPEED 25+0d1
+ATTR 5+0d1
+VAL 449+0d1
+DEF 50+5d10
+DESC
+Forged in the fires of a forgotten realm, this obsidian-black armor is nearly
+indestructible. It hums faintly with ancient energy and bears the marks of a
+hundred battles. Wearing it feels like wrapping yourself in shadow and steel.
+.
+TYPE ARMOR
+COLOR RED
+WEIGHT 50+2d2
+RRTY 15
+ART TRUE
+END
+
+BEGIN OBJECT
+NAME Sheaffer's Fedora of Wisdom
+TYPE RED
+COLOR BROWN
+WEIGHT 3+0d1
+HIT 0+0d1
+DAM 0+0d1
+DEF 10+0d1
+DODGE 2+0d1
+SPEED 0+0d1
+ATTR 15+1d3
+VAL 88+2d10
+DESC
+Once worn by an ancient adventurer-professor, this stylish hat increases your ability to monologue and intimidate museum curators. 
+Smells faintly of leather and danger.
+.
+RRTY 50
+ART TRUE
+END
+
+BEGIN OBJECT
+NAME the Gauntlet of Memes
+TYPE GLOVES
+COLOR YELLOW
+WEIGHT 6+1d2
+HIT 15+2d4
+DAM 50+4d20
+DODGE 5+1d2
+DEF 20+2d6
+SPEED 10+0d1
+ATTR 50+0d1
+VAL 9000+1d1000
+DESC
+An artifact forged in the fires of the internet With a snap of your fingers, you can make any dungeon encounter 
+half as difficult. Or just replace the enemies with Shreks.
+.
+RRTY 25
+ART TRUE
+END
+
+BEGIN OBJECT
+NAME a Bluetooth battleaxe
+TYPE WEAPON
+COLOR BLUE
+WEIGHT 10+1d4
+HIT 5+2d3
+DAM 25+5d10
+ATTR 3+0d1
+VAL 599+1d100
+DODGE 0+0d1
+DEF 5+1d4
+SPEED 5+1d3
+DESC
+A modern take on a classic weapon This battleaxe syncs with your phone, glows with LED indicators, 
+and even plays hype music with each swing Because why not bring Bluetooth into the battlefield
+.
+RRTY 40
+ART TRUE
+END

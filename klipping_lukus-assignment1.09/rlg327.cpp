@@ -86,6 +86,12 @@ int main(int argc, char *argv[])
   char *save_file;
   char *load_file;
   char *pgm_file;
+  /*
+  parse_descriptions(&d);
+  print_descriptions(&d);
+  destroy_descriptions(&d);
+  return 0;
+*/
 
   /* Default behavior: Seed with the time, generate a new dungeon, *
    * and don't write to disk.                                      */
@@ -256,7 +262,7 @@ int main(int argc, char *argv[])
   {
     io_queue_message("Seed is %u.", seed);
   }
-  while (pc_is_alive(&d) && dungeon_has_npcs(&d) && !d.quit)
+  while (pc_is_alive(&d) && !dungeon_has_boss(&d) && !d.quit)
   {
     do_moves(&d);
   }

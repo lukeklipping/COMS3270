@@ -34,6 +34,7 @@ void do_combat(dungeon *d, character *atk, character *def)
   else // monster atk
   {
     damage = atk->damage->roll();
+    // damage = damage < 1 ? 1 : damage; // Ensure at least 1 damage
   }
 
   // ensure damage is not negative
@@ -55,7 +56,16 @@ void do_combat(dungeon *d, character *atk, character *def)
     if (atk == d->PC)
     {
       d->num_monsters--;
-      io_queue_message("You killed %s.", def->name);
+      npc *npc_def = dynamic_cast<npc *>(def);
+      if (npc_def->characteristics & NPC_BOSS)
+      {
+        io_queue_message("You killed the boss %s.", def->name);
+        d->boss_killed = 1;
+      }
+      else
+      {
+        io_queue_message("You killed %s.", def->name);
+      }
       // delete def; deleted in event_delete
     }
     else // delete PC

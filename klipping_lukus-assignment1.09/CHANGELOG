@@ -2,3 +2,9 @@
 04/18/25 9:00: inspect  working
 04/18/25 10:00: look  working
 04/18/25 11:50: hp was unsigned
+04/18/25 12:00: monsters display death message
+04/18/25 12:50: game is playable
+                sometimes freezes, unknown
+04/18/25 1:00: health bar
+04/18/25 1:15: implemented boss check and end
+04/18/25 1:45: fixing borders in modes

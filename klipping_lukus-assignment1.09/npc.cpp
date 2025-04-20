@@ -11,7 +11,6 @@
 #include "pc.h"
 #include "ncurses.h"
 
-
 static uint32_t max_monster_cells(dungeon *d)
 {
   uint32_t i;
@@ -765,6 +764,10 @@ void npc_next_pos(dungeon *d, npc *c, pair_t next)
 uint32_t dungeon_has_npcs(dungeon *d)
 {
   return d->num_monsters;
+}
+uint32_t dungeon_has_boss(dungeon *d)
+{
+  return d->boss_killed;
 }
 
 npc::npc(dungeon *d, monster_description &m) : md(m)
