@@ -1429,6 +1429,190 @@ void io_expunge(dungeon *d)
     }
   } while (1);
 }
+void io_look(dungeon *d)
+{
+  pair_t dest;
+  int c;
+  fd_set readfs;
+  struct timeval tv;
+
+  pc_reset_visibility(d->PC);
+  io_display_no_fog(d);
+
+  mvprintw(0, 0,
+           "Hover over a monster to inspect. 't' to inspect; 'esc' to abort.");
+
+  dest[dim_y] = d->PC->position[dim_y];
+  dest[dim_x] = d->PC->position[dim_x];
+
+  mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+  refresh();
+
+  do
+  {
+    do
+    {
+      FD_ZERO(&readfs);
+      FD_SET(STDIN_FILENO, &readfs);
+
+      tv.tv_sec = 0;
+      tv.tv_usec = 125000; /* An eigth of a second */
+
+      io_redisplay_non_terrain(d, dest);
+    } while (!select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tv));
+    /* Can simply draw the terrain when we move the cursor away, *
+     * because if it is a character or object, the refresh       *
+     * function will fix it for us.                              */
+    switch (mappair(dest))
+    {
+    case ter_wall:
+    case ter_wall_immutable:
+    case ter_unknown:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], ' ');
+      break;
+    case ter_floor:
+    case ter_floor_room:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '.');
+      break;
+    case ter_floor_hall:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '#');
+      break;
+    case ter_debug:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+      break;
+    case ter_stairs_up:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '<');
+      break;
+    case ter_stairs_down:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '>');
+      break;
+    default:
+      /* Use zero as an error symbol, since it stands out somewhat, and it's *
+       * not otherwise used.                                                 */
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '0');
+    }
+    switch ((c = getch()))
+    {
+    case '7':
+    case 'y':
+    case KEY_HOME:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    case '8':
+    case 'k':
+    case KEY_UP:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      break;
+    case '9':
+    case 'u':
+    case KEY_PPAGE:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '6':
+    case 'l':
+    case KEY_RIGHT:
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '3':
+    case 'n':
+    case KEY_NPAGE:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '2':
+    case 'j':
+    case KEY_DOWN:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      break;
+    case '1':
+    case 'b':
+    case KEY_END:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    case '4':
+    case 'h':
+    case KEY_LEFT:
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    }
+  } while (c != 't' && c != 27);
+
+  if (charpair(dest) && charpair(dest) != d->PC)
+  {
+    io_queue_message("You saw a %s.", character_get_name(charpair(dest)));
+    // dynamic case
+    npc *npc_char = dynamic_cast<npc *>(charpair(dest));
+    if (npc_char)
+    {
+      clear();
+      mvprintw(2, 9, "NAME %s.", character_get_name(npc_char));
+      mvprintw(4, 9, "HP: %d", npc_char->hp);
+      mvprintw(5, 9, "~DAMAGE: %d", npc_char->damage->roll());
+      mvprintw(6, 9, "DESC: \n\t%s", npc_char->description);
+      refresh(); // Make sure the screen is updated
+      attron(A_BOLD);
+      mvprintw(23, 9, "Hit any key to continue.");
+      attroff(A_BOLD);
+      getch();
+    }
+  }
+  else if (objpair(dest))
+  {
+    io_queue_message("You see the object %s.", objpair(dest)->get_name());
+  }
+  else if (mappair(dest) == ter_stairs_up)
+  {
+    io_queue_message("You see a staircase up.");
+  }
+  else if (mappair(dest) == ter_stairs_down)
+  {
+    io_queue_message("You see a staircase down.");
+  }
+  else if (mappair(dest) == ter_debug)
+  {
+    io_queue_message("You see a debug tile.");
+  }
+  io_display(d);
+}
 
 void io_handle_input(dungeon *d)
 {
@@ -1610,6 +1794,7 @@ void io_handle_input(dungeon *d)
       break;
     case 'L':
       // look
+      io_look(d);
       fail_code = 1;
       break;
     default:

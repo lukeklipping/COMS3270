@@ -1,14 +1,15 @@
 #ifndef CHARACTER_H
-# define CHARACTER_H
+#define CHARACTER_H
 
-# include <cstdint>
-# include <vector>
-# include <cstdlib>
+#include <cstdint>
+#include <vector>
+#include <cstdlib>
 
-# include "dims.h"
-# include "utils.h"
+#include "dims.h"
+#include "utils.h"
 
-typedef enum kill_type {
+typedef enum kill_type
+{
   kill_direct,
   kill_avenged,
   num_kill_types
@@ -16,8 +17,9 @@ typedef enum kill_type {
 
 class dice;
 
-class character {
- public:
+class character
+{
+public:
   virtual ~character() {}
   char symbol;
   pair_t position;
@@ -38,6 +40,8 @@ class character {
   uint32_t kills[num_kill_types];
   inline uint32_t get_color() { return color[rand_range(0, color.size() - 1)]; }
   inline char get_symbol() { return symbol; }
+
+
 };
 
 class dungeon;
