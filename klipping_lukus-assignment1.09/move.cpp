@@ -19,16 +19,13 @@
 void do_combat(dungeon *d, character *atk, character *def)
 {
   uint32_t damage = 0;
+  damage += atk->damage ? atk->damage->roll() : 0;
   if (atk == d->PC)
   {
     int i;
     for (i = 0; i < EQUIPMENT_SIZE; i++)
     {
-      if (i == 0 && !d->PC->equipment[i])
-      {
-        damage += d->PC->damage->roll();
-      }
-      else if (d->PC->equipment[i])
+      if (d->PC->equipment[i])
       {
         damage += d->PC->equipment[i]->roll_dice();
       }
@@ -38,6 +35,10 @@ void do_combat(dungeon *d, character *atk, character *def)
   {
     damage = atk->damage->roll();
   }
+
+  // ensure damage is not negative
+  damage = damage < 0 ? 0 : damage;
+
   if (atk == d->PC)
   {
     io_queue_message("You hit %s for %d damage.", def->name, damage);
@@ -47,21 +48,23 @@ void do_combat(dungeon *d, character *atk, character *def)
     io_queue_message("%s hits you for %d damage.", atk->name, damage);
   }
   def->hp -= damage;
-  if (def->hp <= 0)
+  if (def->hp < 0)
   {
+    character_die(def);
 
-    def->alive = 0;
-
-    charpair(def->position) = NULL;
-    if (def != d->PC)
+    if (atk == d->PC)
     {
       d->num_monsters--;
+      io_queue_message("You killed %s.", def->name);
+      // delete def; deleted in event_delete
     }
-    else // PC
+    else // delete PC
     {
+      // rest will be dealed with in main
       delete_pc_equipment(d->PC);
       delete_pc_inventory(d->PC);
     }
+    charpair(def->position) = NULL;
     character_increment_dkills(atk);
     character_increment_ikills(atk, (character_get_dkills(def) +
                                      character_get_ikills(def)));
@@ -81,6 +84,9 @@ void move_character(dungeon *d, character *c, pair_t next)
     else
     {
       d->character_map[character_get_y(c)][character_get_x(c)] = NULL;
+      character_set_y(charpair(next), character_get_y(c));
+      character_set_x(charpair(next), character_get_x(c));
+      d->character_map[character_get_y(c)][character_get_x(c)] = charpair(next);
       character_set_y(c, next[dim_y]);
       character_set_x(c, next[dim_x]);
       d->character_map[character_get_y(c)][character_get_x(c)] = c;

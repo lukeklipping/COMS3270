@@ -22,6 +22,7 @@
 #define NPC_MIN_SPEED 5
 #define NPC_MAX_SPEED 20
 #define MAX_MONSTERS 15
+#define PC_HEALTH 100
 #define MAX_OBJECTS 15
 #define INVENTORY_SIZE 10
 #define EQUIPMENT_SIZE 12

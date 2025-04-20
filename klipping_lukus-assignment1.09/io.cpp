@@ -464,6 +464,10 @@ void io_display(dungeon *d)
   mvprintw(22, 1, "%d known %s.", visible_monsters,
            visible_monsters > 1 ? "monsters" : "monster");
   mvprintw(22, 30, "Nearest visible monster: ");
+  mvprintw(23, 30, "PC HP: ");
+  attron(COLOR_PAIR(COLOR_GREEN));
+  mvprintw(23, 38, "%d/%d", d->PC->hp, PC_HEALTH);
+  attroff(COLOR_PAIR(COLOR_GREEN));
   if ((c = io_nearest_visible_monster(d)))
   {
     attron(COLOR_PAIR(COLOR_RED));
@@ -592,6 +596,7 @@ void io_display_no_fog(dungeon *d)
   mvprintw(22, 1, "%d %s.", d->num_monsters,
            d->num_monsters > 1 ? "monsters" : "monster");
   mvprintw(22, 30, "Nearest visible monster: ");
+  mvprintw(23, 30, "PC HP: %d/%d", d->PC->hp, PC_HEALTH);
   if ((c = io_nearest_visible_monster(d)))
   {
     attron(COLOR_PAIR(COLOR_RED));

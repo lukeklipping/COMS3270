@@ -242,7 +242,7 @@ void config_pc(dungeon *d)
   d->PC->color.push_back(COLOR_WHITE);
   d->PC->damage = &pc_dice;
   d->PC->name = "You";
-  d->PC->hp = 100;
+  d->PC->hp = PC_HEALTH;
 
   d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = d->PC;
   int i;
