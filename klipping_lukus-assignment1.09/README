@@ -1,0 +1,5 @@
+This project enhances the combat and inventory systems in our dungeon crawler game. The player character (PC) now has hitpoints and equipment slots, enabling multi-round combat and dynamic gear management. Items can be picked up, equipped, swapped, dropped, or destroyed using new in-game commands. Equipment provides bonuses to damage and speed, and all combat damage is calculated by rolling applicable dice. Combat now ends only when the PC defeats the boss (SpongeBob SquarePants) or dies, adding more depth and strategy to gameplay.
+
+For TA:
+
+    The game mostly works the whole time, sometimes the game crashes randomly
