@@ -1710,6 +1710,192 @@ uint32_t io_expunge_in(dungeon *d)
   return 1;
 }
 
+uint32_t io_target(dungeon *d)
+{
+  pair_t dest;
+  int c, i;
+  fd_set readfs;
+  struct timeval tv;
+
+  // pc_reset_visibility(d->PC);
+  // io_display_no_fog(d);
+
+  for (i = 0; i < num_eq_slots; i++)
+  {
+    if (d->PC->eq[i] && d->PC->eq[i]->get_type() == objtype_RANGED)
+    {
+      continue;
+    }
+    else
+    {
+      io_queue_message("No ranged weapon!");
+      return -1;
+    }
+  }
+
+  mvprintw(0, 0,
+           "Choose a location.  'f' or '.' to fire at a  monster.");
+
+  dest[dim_y] = d->PC->position[dim_y];
+  dest[dim_x] = d->PC->position[dim_x];
+
+  mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+  refresh();
+
+  do
+  {
+    do
+    {
+      FD_ZERO(&readfs);
+      FD_SET(STDIN_FILENO, &readfs);
+
+      tv.tv_sec = 0;
+      tv.tv_usec = 125000; /* An eigth of a second */
+
+      io_redisplay_non_terrain(d, dest);
+    } while (!select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tv));
+    /* Can simply draw the terrain when we move the cursor away, *
+     * because if it is a character or object, the refresh       *
+     * function will fix it for us.                              */
+    switch (mappair(dest))
+    {
+    case ter_wall:
+    case ter_wall_immutable:
+    case ter_unknown:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], ' ');
+      break;
+    case ter_floor:
+    case ter_floor_room:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '.');
+      break;
+    case ter_floor_hall:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '#');
+      break;
+    case ter_debug:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '*');
+      break;
+    case ter_stairs_up:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '<');
+      break;
+    case ter_stairs_down:
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '>');
+      break;
+    default:
+      /* Use zero as an error symbol, since it stands out somewhat, and it's *
+       * not otherwise used.                                                 */
+      mvaddch(dest[dim_y] + 1, dest[dim_x], '0');
+    }
+    switch ((c = getch()))
+    {
+    case '7':
+    case 'y':
+    case KEY_HOME:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    case '8':
+    case 'k':
+    case KEY_UP:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      break;
+    case '9':
+    case 'u':
+    case KEY_PPAGE:
+      if (dest[dim_y] != 1)
+      {
+        dest[dim_y]--;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '6':
+    case 'l':
+    case KEY_RIGHT:
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '3':
+    case 'n':
+    case KEY_NPAGE:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != DUNGEON_X - 2)
+      {
+        dest[dim_x]++;
+      }
+      break;
+    case '2':
+    case 'j':
+    case KEY_DOWN:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      break;
+    case '1':
+    case 'b':
+    case KEY_END:
+      if (dest[dim_y] != DUNGEON_Y - 2)
+      {
+        dest[dim_y]++;
+      }
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    case '4':
+    case 'h':
+    case KEY_LEFT:
+      if (dest[dim_x] != 1)
+      {
+        dest[dim_x]--;
+      }
+      break;
+    }
+  } while (c != 'f' && c != '.');
+
+  if (!(charpair(dest)) && charpair(dest) != d->PC)
+  {
+    io_queue_message("Shot failed, no target.");
+  }
+  else
+  {
+    for (i = 0; i < num_eq_slots; i++)
+    {
+      if (d->PC->eq[i] && d->PC->eq[i]->get_type() == objtype_RANGED)
+      {
+        charpair(dest) -= d->PC->eq[i]->roll_dice();
+      }
+    }
+
+    d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = NULL;
+    d->character_map[dest[dim_y]][dest[dim_x]] = d->PC;
+
+    d->PC->position[dim_y] = dest[dim_y];
+    d->PC->position[dim_x] = dest[dim_x];
+  }
+
+  io_display(d);
+
+  return 0;
+}
+
 void io_handle_input(dungeon *d)
 {
   uint32_t fail_code;
@@ -1851,6 +2037,11 @@ void io_handle_input(dungeon *d)
     case 'e':
       io_display_eq(d);
       fail_code = 1;
+      break;
+    case 'r':
+      // ranged fire
+      io_target(d);
+      fail_code = 0;
       break;
     case 'c':
       io_display_ch(d);

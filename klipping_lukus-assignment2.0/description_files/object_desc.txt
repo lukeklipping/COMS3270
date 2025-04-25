@@ -368,3 +368,67 @@ RRTY 80
 ART TRUE
 END
 
+BEGIN OBJECT
+NAME a longbow
+TYPE WEAPON
+WEIGHT 3+0d1
+COLOR WHITE
+HIT 8+2d5
+DAM 15+3d10
+DODGE 5+0d1
+DEF 0+0d1
+SPEED 0+0d1
+VAL 250+0d10
+DESC
+A finely crafted longbow, perfect for picking off enemies from a distance. 
+The string is taut, and the wood is smooth, ready to send arrows flying with 
+great precision.
+.
+ATTR 0+0d1
+RRTY 70
+ART FALSE
+END
+
+BEGIN OBJECT
+NAME a crossbow
+TYPE WEAPON
+COLOR BLACK
+WEIGHT 7+0d1
+HIT 10+3d6
+DAM 20+4d8
+DODGE 0+0d1
+DEF 0+0d1
+SPEED -5+0d1
+VAL 400+0d15
+DESC
+This powerful crossbow is ideal for those who prefer a bit more stopping 
+power. The mechanism is intricate, and the bolts are more lethal than an 
+ordinary bow's arrows.
+.
+ATTR 0+0d1
+RRTY 60
+ART FALSE
+END
+
+BEGIN OBJECT
+NAME a slingshot
+TYPE WEAPON
+COLOR GREEN
+WEIGHT 1+0d1
+HIT 5+1d3
+DAM 5+1d5
+DODGE 10+0d1
+DEF 0+0d1
+SPEED 0+0d1
+RRTY 80
+DESC
+A simple but effective slingshot, perfect for those who need a quick and 
+lightweight ranged weapon. It can fire small stones or bullets with impressive 
+speed.
+.
+ATTR 0+0d1
+VAL 50+0d5
+ART FALSE
+END
+
+
