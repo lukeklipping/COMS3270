@@ -1,13 +1,14 @@
 #ifndef PC_H
-# define PC_H
+#define PC_H
 
-# include <stdint.h>
+#include <stdint.h>
 
-# include "dims.h"
-# include "character.h"
-# include "dungeon.h"
+#include "dims.h"
+#include "character.h"
+#include "dungeon.h"
 
-typedef enum eq_slot {
+typedef enum eq_slot
+{
   eq_slot_weapon,
   eq_slot_offhand,
   eq_slot_ranged,
@@ -25,17 +26,21 @@ typedef enum eq_slot {
 
 extern const char *eq_slot_name[num_eq_slots];
 
-class pc : public character {
- private:
+class pc : public character
+{
+private:
   void recalculate_speed();
+  void recalculate_light();
   uint32_t has_open_inventory_slot();
   int32_t get_first_open_inventory_slot();
   object *from_pile(dungeon *d, pair_t pos);
- public:
+
+public:
   pc();
   ~pc();
   object *eq[num_eq_slots];
   object *in[MAX_INVENTORY];
+  uint32_t light_range;
 
   uint32_t wear_in(uint32_t slot);
   uint32_t remove_eq(uint32_t slot);
@@ -44,6 +49,7 @@ class pc : public character {
   uint32_t pick_up(dungeon *d);
   terrain_type known_terrain[DUNGEON_Y][DUNGEON_X];
   uint8_t visible[DUNGEON_Y][DUNGEON_X];
+  uint32_t get_light() { return light_range; }
 };
 
 void pc_delete(pc *pc);

@@ -1,13 +1,14 @@
 #ifndef OBJECT_H
-# define OBJECT_H
+#define OBJECT_H
 
-# include <string>
+#include <string>
 
-# include "descriptions.h"
-# include "dims.h"
+#include "descriptions.h"
+#include "dims.h"
 
-class object {
- private:
+class object
+{
+private:
   const std::string &name;
   const std::string &description;
   object_type_t type;
@@ -18,7 +19,8 @@ class object {
   bool seen;
   object *next;
   object_description &od;
- public:
+
+public:
   object(object_description &o, pair_t p, object *next);
   ~object();
   inline int32_t get_damage_base() const
@@ -39,6 +41,7 @@ class object {
   int32_t get_speed();
   int32_t roll_dice();
   int32_t get_type();
+
   bool have_seen() { return seen; }
   void has_been_seen() { seen = true; }
   int16_t *get_position() { return position; }
@@ -52,6 +55,7 @@ class object {
   inline object *get_next() { return next; }
   inline void set_next(object *n) { next = n; }
   const char *get_description() { return description.c_str(); }
+  uint32_t get_attribute() { return attribute; }
 };
 
 void gen_objects(dungeon *d);

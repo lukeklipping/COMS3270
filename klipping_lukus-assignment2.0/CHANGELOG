@@ -1,17 +1,1 @@
-04/18/25 7:00: inventory
-04/18/25 7:30: equipment
-04/18/25 8:00: automatic pickup working
-04/18/25 9:00: inspect working
-04/18/25 10:00: look working
-04/19/25 11:00: wear working
-04/19/25 12:00 equip working
-04/20/25 9:00: inspect working
-04/20/25 11:50: hp was unsigned
-04/20/25 12:00: monsters display death message
-04/20/25 12:50: game is playable
-sometimes freezes, unknown
-04/20/25 1:00: health bar
-04/20/25 1:15: implemented boss check and end
-04/20/25 1:45: fixing borders in modes
-04/21/25 3:30: works
-04/21/25 3:30: readme
+04/25/25 12:45: pc health
