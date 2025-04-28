@@ -1,5 +1,5 @@
 1. Making lights work
+2. Implemented range combat, 'r' to enter target mode, and 'f' to fire
+3. implemented spells, 'S' to enter spell mode, hits area around it
 
 For TA:
-
-    The game mostly works the whole time, sometimes the game crashes randomly

@@ -1,12 +1,12 @@
 #ifndef DESCRIPTIONS_H
-# define DESCRIPTIONS_H
+#define DESCRIPTIONS_H
 
-# include <stdint.h>
-# include <vector>
-# include <string>
+#include <stdint.h>
+#include <vector>
+#include <string>
 
-# include "dice.h"
-# include "npc.h"
+#include "dice.h"
+#include "npc.h"
 
 class dungeon;
 
@@ -14,11 +14,13 @@ uint32_t parse_descriptions(dungeon *d);
 uint32_t print_descriptions(dungeon *d);
 uint32_t destroy_descriptions(dungeon *d);
 
-typedef enum object_type {
+typedef enum object_type
+{
   objtype_no_type,
   objtype_WEAPON,
   objtype_OFFHAND,
   objtype_RANGED,
+  objtype_SPELL,
   objtype_LIGHT,
   objtype_ARMOR,
   objtype_HELMET,
@@ -40,15 +42,16 @@ typedef enum object_type {
 extern const char object_symbol[];
 class npc;
 
-class monster_description {
- private:
+class monster_description
+{
+private:
   std::string name, description;
   char symbol;
   std::vector<uint32_t> color;
   uint32_t abilities;
   dice speed, hitpoints, damage;
   uint32_t rarity;
-   uint32_t num_alive, num_killed;
+  uint32_t num_alive, num_killed;
   inline bool can_be_generated()
   {
     return (((abilities & NPC_UNIQ) && !num_alive && !num_killed) ||
@@ -56,13 +59,13 @@ class monster_description {
   }
   inline bool pass_rarity_roll()
   {
-    return rarity > (unsigned) (rand() % 100);
+    return rarity > (unsigned)(rand() % 100);
   }
 
 public:
-  monster_description() : name(),       description(), symbol(0),    color(0),
-                          abilities(0), speed(),       hitpoints(),  damage(),
-                          rarity(0),    num_alive(0),  num_killed(0)
+  monster_description() : name(), description(), symbol(0), color(0),
+                          abilities(0), speed(), hitpoints(), damage(),
+                          rarity(0), num_alive(0), num_killed(0)
   {
   }
   void set(const std::string &name,
@@ -94,8 +97,9 @@ public:
   friend bool boss_is_alive(dungeon *d);
 };
 
-class object_description {
- private:
+class object_description
+{
+private:
   std::string name, description;
   object_type_t type;
   uint32_t color;
@@ -104,11 +108,12 @@ class object_description {
   uint32_t rarity;
   uint32_t num_generated;
   uint32_t num_found;
- public:
-  object_description() : name(),    description(), type(objtype_no_type),
-                         color(0),  hit(),         damage(),
-                         dodge(),   defence(),     weight(),
-                         speed(),   attribute(),   value(),
+
+public:
+  object_description() : name(), description(), type(objtype_no_type),
+                         color(0), hit(), damage(),
+                         dodge(), defence(), weight(),
+                         speed(), attribute(), value(),
                          artifact(false), rarity(0), num_generated(0),
                          num_found(0)
   {
@@ -119,7 +124,7 @@ class object_description {
   }
   inline bool pass_rarity_roll()
   {
-    return rarity > (unsigned) (rand() % 100);
+    return rarity > (unsigned)(rand() % 100);
   }
   void set(const std::string &name,
            const std::string &description,

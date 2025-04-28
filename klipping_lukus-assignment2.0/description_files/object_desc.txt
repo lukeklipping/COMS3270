@@ -431,4 +431,87 @@ VAL 50+0d5
 ART FALSE
 END
 
+BEGIN OBJECT
+NAME a dragonbone composite bow
+TYPE RANGED
+WEIGHT 5+0d1
+COLOR WHITE
+HIT 18+2d8
+DAM 40+5d10
+DODGE 3+0d1
+DEF 0+0d1
+SPEED 3+1d2
+VAL 2500+2d250
+DESC
+A powerful bow made from the bones of ancient dragons. 
+It offers unmatched tension and power
+propelling arrows at deadly speed and accuracy.
+.
+ATTR 7+0d2
+RRTY 10
+ART TRUE
+END
+
+BEGIN OBJECT
+NAME an elven longbow of the stars
+TYPE RANGED
+WEIGHT 2+0d1
+COLOR CYAN
+HIT 15+3d6
+DAM 25+5d10
+DODGE 5+0d1
+DEF 0+0d1
+SPEED 5+1d3
+VAL 1000+2d100
+DESC
+A legendary longbow crafted by ancient elves, 
+said to shoot arrows that can pierce the toughest armor. 
+It shimmers faintly with the light of distant stars.
+.
+ATTR 5+0d3
+RRTY 20
+ART TRUE
+END
+
+BEGIN OBJECT
+NAME a scroll of fireball
+TYPE SPELL
+WEIGHT 1+0d1
+COLOR RED
+HIT 0+0d1
+DAM 100+5d10
+DODGE 0+0d1
+DEF 0+0d1
+SPEED 0+0d1
+VAL 300+0d50
+DESC
+This scroll contains the powerful Fireball spell. 
+Unleashing it engulfs a large area in intense flames, 
+incinerating everything in its path.
+.
+ATTR 0+0d1
+RRTY 40
+ART FALSE
+END
+
+BEGIN OBJECT
+NAME poison bat spell
+TYPE SPELL
+WEIGHT 1+0d1
+COLOR RED
+HIT 0+0d1
+DAM 50+5d50
+DODGE 0+0d1
+DEF 0+0d1
+SPEED 0+0d1
+VAL 300+0d50
+DESC
+This scroll contains the powerful bat spell. 
+Unleashing it engulfs a large area in intense poison bats, 
+killing everything in its path.
+.
+ATTR 0+0d1
+RRTY 40
+ART FALSE
+END
 

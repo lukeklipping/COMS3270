@@ -12,6 +12,7 @@ typedef enum eq_slot
   eq_slot_weapon,
   eq_slot_offhand,
   eq_slot_ranged,
+  eq_slot_spell,
   eq_slot_light,
   eq_slot_armor,
   eq_slot_helmet,

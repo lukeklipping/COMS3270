@@ -14,6 +14,7 @@ const char *eq_slot_name[num_eq_slots] = {
     "weapon",
     "offhand",
     "ranged",
+    "spell",
     "light",
     "armor",
     "helmet",

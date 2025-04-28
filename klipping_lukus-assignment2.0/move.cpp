@@ -20,6 +20,7 @@
 void do_combat(dungeon *d, character *atk, character *def, attack_type_t type)
 {
   uint32_t damage, i;
+  std::string attack = "";
   const char *organs[] = {
       "liver",
       "pancreas",
@@ -102,6 +103,7 @@ void do_combat(dungeon *d, character *atk, character *def, attack_type_t type)
       damage = atk->damage->roll();
       if (type == attack_type_ranged)
       {
+        attack = " ranged attack!";
         for (i = 0; i < num_eq_slots; i++)
         {
           if (i == eq_slot_ranged && d->PC->eq[i])
@@ -116,6 +118,7 @@ void do_combat(dungeon *d, character *atk, character *def, attack_type_t type)
       }
       else if (type == attack_type_melee)
       { // melee
+        attack = " melee attack!";
         for (i = 0; i < num_eq_slots; i++)
         {
           if (i == eq_slot_weapon && !d->PC->eq[i])
@@ -128,8 +131,27 @@ void do_combat(dungeon *d, character *atk, character *def, attack_type_t type)
           }
         }
       }
+      else if (type == attack_type_mana)
+      {
+        attack = " spell attack!";
 
-      io_queue_message("You hit %s%s for %d.", is_unique(def) ? "" : "the ", def->name, damage);
+        for (i = 0; i < 9; i++)
+        {
+          for (i = 0; i < num_eq_slots; i++)
+          {
+            if (i == eq_slot_spell && !d->PC->eq[i])
+            {
+              damage += atk->damage->roll();
+            }
+            else if (d->PC->eq[i])
+            {
+              damage += d->PC->eq[i]->roll_dice();
+            }
+          }
+        }
+      }
+
+      io_queue_message("You hit %s%s for %d with %s.", is_unique(def) ? "" : "the ", def->name, damage, attack.c_str());
     }
 
     if (damage >= def->hp)
