@@ -17,7 +17,7 @@
 #include "npc.h"
 #include "object.h"
 
-void do_combat(dungeon *d, character *atk, character *def)
+void do_combat(dungeon *d, character *atk, character *def, attack_type_t type)
 {
   uint32_t damage, i;
   const char *organs[] = {
@@ -99,19 +99,37 @@ void do_combat(dungeon *d, character *atk, character *def)
     }
     else
     {
-      for (i = damage = 0; i < num_eq_slots; i++)
+      damage = atk->damage->roll();
+      if (type == attack_type_ranged)
       {
-        if (i == eq_slot_weapon && !d->PC->eq[i])
+        for (i = 0; i < num_eq_slots; i++)
         {
-          damage += atk->damage->roll();
-        }
-        else if (d->PC->eq[i])
-        {
-          damage += d->PC->eq[i]->roll_dice();
+          if (i == eq_slot_ranged && d->PC->eq[i])
+          {
+            damage += atk->damage->roll();
+          }
+          else if (d->PC->eq[i] && i != eq_slot_weapon) // do not factor in main weapon damage buff
+          {
+            damage += d->PC->eq[i]->roll_dice();
+          }
         }
       }
-      io_queue_message("You hit %s%s for %d.", is_unique(def) ? "" : "the ",
-                       def->name, damage);
+      else if (type == attack_type_melee)
+      { // melee
+        for (i = 0; i < num_eq_slots; i++)
+        {
+          if (i == eq_slot_weapon && !d->PC->eq[i])
+          {
+            damage += atk->damage->roll();
+          }
+          else if (d->PC->eq[i])
+          {
+            damage += d->PC->eq[i]->roll_dice();
+          }
+        }
+      }
+
+      io_queue_message("You hit %s%s for %d.", is_unique(def) ? "" : "the ", def->name, damage);
     }
 
     if (damage >= def->hp)
@@ -173,7 +191,7 @@ void move_character(dungeon *d, character *c, pair_t next)
     if ((charpair(next) == d->PC) ||
         c == d->PC)
     {
-      do_combat(d, c, charpair(next));
+      do_combat(d, c, charpair(next), attack_type_melee);
     }
     else
     {

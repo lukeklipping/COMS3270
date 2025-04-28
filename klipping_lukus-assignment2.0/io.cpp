@@ -199,12 +199,12 @@ static void io_redisplay_visible_monsters(dungeon *d, pair_t cursor)
   uint32_t color;
   uint32_t illuminated;
 
-  for (pos[dim_y] = -PC_VISUAL_RANGE;
-       pos[dim_y] <= PC_VISUAL_RANGE;
+  for (pos[dim_y] = (int16_t)-d->PC->light_range;
+       pos[dim_y] <= (int16_t)d->PC->light_range;
        pos[dim_y]++)
   {
-    for (pos[dim_x] = -PC_VISUAL_RANGE;
-         pos[dim_x] <= PC_VISUAL_RANGE;
+    for (pos[dim_x] = (int16_t)-d->PC->light_range;
+         pos[dim_x] <= (int16_t)d->PC->light_range;
          pos[dim_x]++)
     {
       if ((d->PC->position[dim_y] + pos[dim_y] < 0) ||
@@ -1713,28 +1713,14 @@ uint32_t io_expunge_in(dungeon *d)
 uint32_t io_target(dungeon *d)
 {
   pair_t dest;
-  int c, i;
+  int c;
   fd_set readfs;
   struct timeval tv;
 
   // pc_reset_visibility(d->PC);
   // io_display_no_fog(d);
 
-  for (i = 0; i < num_eq_slots; i++)
-  {
-    if (d->PC->eq[i] && d->PC->eq[i]->get_type() == objtype_RANGED)
-    {
-      continue;
-    }
-    else
-    {
-      io_queue_message("No ranged weapon!");
-      return -1;
-    }
-  }
-
-  mvprintw(0, 0,
-           "Choose a location.  'f' or '.' to fire at a  monster.");
+  mvprintw(0, 0, "Choose a location.  'f' or '.' to fire at a  monster.");
 
   dest[dim_y] = d->PC->position[dim_y];
   dest[dim_x] = d->PC->position[dim_x];
@@ -1752,7 +1738,7 @@ uint32_t io_target(dungeon *d)
       tv.tv_sec = 0;
       tv.tv_usec = 125000; /* An eigth of a second */
 
-      io_redisplay_non_terrain(d, dest);
+      io_redisplay_visible_monsters(d, dest);
     } while (!select(STDIN_FILENO + 1, &readfs, NULL, NULL, &tv));
     /* Can simply draw the terrain when we move the cursor away, *
      * because if it is a character or object, the refresh       *
@@ -1870,25 +1856,35 @@ uint32_t io_target(dungeon *d)
     }
   } while (c != 'f' && c != '.');
 
-  if (!(charpair(dest)) && charpair(dest) != d->PC)
+  if (!can_see(d, d->PC->position, dest, 1, 0))
   {
-    io_queue_message("Shot failed, no target.");
+    io_queue_message("No target in line of sight!");
+    return -1;
+  }
+
+  if (!d->PC->eq[eq_slot_ranged] || d->PC->eq[eq_slot_ranged]->get_type() != objtype_RANGED)
+  {
+    io_queue_message("No ranged weapon equipped!");
+    return -1;
+  }
+
+  /*if (!(charpair(dest)) && charpair(dest) != d->PC)
+  {
+    io_queue_message("You missed %s", charpair(dest)->name);
+    return -1;
+  }*/
+  if (charpair(dest) != d->PC && charpair(dest))
+  {
+    do_combat(d, d->PC, charpair(dest), attack_type_ranged);
+    io_display(d);
+    mvprintw(2, 0, "Press any key to continue...");
+    refresh();
+    getch();
   }
   else
   {
-    for (i = 0; i < num_eq_slots; i++)
-    {
-      if (d->PC->eq[i] && d->PC->eq[i]->get_type() == objtype_RANGED)
-      {
-        charpair(dest) -= d->PC->eq[i]->roll_dice();
-      }
-    }
-
-    d->character_map[d->PC->position[dim_y]][d->PC->position[dim_x]] = NULL;
-    d->character_map[dest[dim_y]][dest[dim_x]] = d->PC;
-
-    d->PC->position[dim_y] = dest[dim_y];
-    d->PC->position[dim_x] = dest[dim_x];
+    io_queue_message("No monster at target!");
+    return -1;
   }
 
   io_display(d);

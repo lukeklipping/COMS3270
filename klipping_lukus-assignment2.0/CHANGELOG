@@ -1,3 +1,8 @@
 04/25/25 12:45: impelemented pc health display
 04/25/25 1:20: light implemented
-
+04/25/25 2:20: beginning ranged combat
+04/28/25 9:55: new attack_type enum
+04/28/25 10:00: ranged implemented into do_combat with target_mode
+04/28/25 10:30: ranged working
+04/28/25 11:00: found bug with death messages and damage messages not working for ranged
+04/28/25 11:30: bug fixed, ranged working

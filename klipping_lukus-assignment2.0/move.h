@@ -1,12 +1,13 @@
 #ifndef MOVE_H
-# define MOVE_H
+#define MOVE_H
 
-# include <stdint.h>
+#include <stdint.h>
 
-# include "dims.h"
+#include "dims.h"
+#include "dungeon.h"
 
 class character;
-class dungeon;
+// class dungeon;
 
 void next_move(dungeon *d,
                character *c,
@@ -14,6 +15,7 @@ void next_move(dungeon *d,
                pair_t next_pos);
 void do_moves(dungeon *d);
 void dir_nearest_wall(dungeon *d, character *c, pair_t dir);
+void do_combat(dungeon *d, character *atk, character *def, attack_type_t type);
 uint32_t in_corner(dungeon *d, character *c);
 uint32_t against_wall(dungeon *d, character *c);
 uint32_t move_pc(dungeon *d, uint32_t dir);

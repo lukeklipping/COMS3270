@@ -55,6 +55,13 @@ enum __attribute__((__packed__)) terrain_type
   ter_stairs_down
 };
 
+typedef enum attack_type
+{
+  attack_type_melee,
+  attack_type_ranged,
+  attack_type_mana
+} attack_type_t;
+
 typedef struct room
 {
   pair_t position;
